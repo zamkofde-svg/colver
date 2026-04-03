@@ -197,6 +197,9 @@
       transform: translateY(-4px);
       box-shadow: 0 24px 60px rgba(0,0,0,0.35);
     }
+    /* Comparison table: hide column labels on desktop */
+    .cmp-col-label { display: none; }
+
     /* Bento cards */
     .bento-card:hover {
       transform: translateY(-2px);
@@ -329,9 +332,58 @@
       /* Final CTA */
       .cta-grid { grid-template-columns: 1fr !important; }
 
-      /* Comparison table — horizontal scroll */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .table-wrap table { min-width: 560px; }
+      /* Comparison table — card layout on mobile */
+      .cmp-header { display: none !important; }
+      .cmp-row {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        padding: 16px !important;
+        background: transparent !important;
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+      }
+      .cmp-cell-param {
+        display: block !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        padding: 0 0 10px 0 !important;
+        border: none !important;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .cmp-cells-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px;
+      }
+      .cmp-col-label { display: block !important; }
+      .cmp-cell-val {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 8px 6px !important;
+        border: none !important;
+        border-left: none !important;
+        border-top: none !important;
+        text-align: center !important;
+        font-size: 11px !important;
+        background: rgba(255,255,255,0.02);
+        border-radius: 8px;
+      }
+      .cmp-cell-val .cmp-col-label {
+        font-size: 9px;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      .cmp-cell-val.colver-col {
+        background: rgba(59,130,246,0.08);
+      }
+      .cmp-cell-val.colver-col .cmp-col-label {
+        color: #60a5fa;
+      }
 
       /* Pilot banner */
       .pilot-banner { flex-direction: column !important; gap: 14px !important; }
@@ -1682,7 +1734,7 @@
     <div class="table-wrap">
       <div class="glass" style="border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);">
         <!-- Table header -->
-        <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:rgba(255,255,255,0.03);">
+        <div class="cmp-header" style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:rgba(255,255,255,0.03);">
           <div style="padding:16px 20px;font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Параметр</div>
           <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
             <div style="font-size:13px;font-weight:600;color:#64748b;">Обычный РОП / ОКК</div>
@@ -2186,11 +2238,13 @@
   tableRows.forEach((r, i) => {
     const bg = i%2===0 ? 'rgba(255,255,255,0.01)' : 'transparent';
     tbody.innerHTML += `
-      <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:${bg};">
-        <div style="padding:14px 20px;font-size:13px;color:#64748b;font-weight:500;border-top:1px solid rgba(255,255,255,0.03);">${r[0]}</div>
-        <div style="padding:14px 20px;font-size:13px;color:#475569;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);">${r[1]}</div>
-        <div style="padding:14px 20px;font-size:13px;color:#64748b;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);">${r[2]}</div>
-        <div style="padding:14px 20px;font-size:13px;color:#60a5fa;font-weight:600;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.04);">${r[3]}</div>
+      <div class="cmp-row" style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:${bg};">
+        <div class="cmp-cell-param" style="padding:14px 20px;font-size:13px;color:#64748b;font-weight:500;border-top:1px solid rgba(255,255,255,0.03);">${r[0]}</div>
+        <div class="cmp-cells-row" style="display:contents;">
+          <div class="cmp-cell-val" style="padding:14px 20px;font-size:13px;color:#475569;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);"><span class="cmp-col-label">РОП / ОКК</span>${r[1]}</div>
+          <div class="cmp-cell-val" style="padding:14px 20px;font-size:13px;color:#64748b;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);"><span class="cmp-col-label">Речевая аналитика</span>${r[2]}</div>
+          <div class="cmp-cell-val colver-col" style="padding:14px 20px;font-size:13px;color:#60a5fa;font-weight:600;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.04);"><span class="cmp-col-label">COLVER</span>${r[3]}</div>
+        </div>
       </div>`;
   });
 
