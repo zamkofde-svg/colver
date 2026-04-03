@@ -319,8 +319,11 @@
       /* No scripts */
       .noscript-grid { grid-template-columns: 1fr !important; }
 
-      /* Trust */
-      .trust-stats-grid { grid-template-columns: 1fr !important; }
+      /* Trust proof-of-scale */
+      .results-main-grid { grid-template-columns: 1fr !important; }
+      .trust-stats-grid { grid-template-columns: 1fr 1fr !important; }
+      .trust-block { padding: 28px 24px !important; }
+      .trust-block .trust-footer { margin-top: 24px !important; padding-top: 20px !important; }
 
       /* Pilot */
       .pilot-grid { grid-template-columns: 1fr !important; }
@@ -420,6 +423,7 @@
     /* ── 480px breakpoint ── */
     @media (max-width: 480px) {
       .results-grid { grid-template-columns: 1fr !important; }
+      .trust-stats-grid { grid-template-columns: 1fr !important; }
       .stats-grid { grid-template-columns: 1fr !important; }
       .calc-sliders { grid-template-columns: 1fr !important; }
       .scenarios-grid { grid-template-columns: 1fr 1fr !important; }
@@ -1689,10 +1693,10 @@
     <!-- Header -->
     <div style="margin-bottom:56px;">
       <div class="tag" style="margin-bottom:20px;">Доказанные результаты</div>
-      <h2 style="font-size:clamp(28px,3.8vw,50px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 20px;line-height:1.1;max-width:720px;">
+      <h2 style="font-size:clamp(26px,3.2vw,42px);font-weight:700;color:#f1f5f9;letter-spacing:-0.02em;margin:0 0 16px;line-height:1.15;max-width:680px;">
         COLVER уже доказал эффективность в реальной сети продаж недвижимости
       </h2>
-      <p style="font-size:17px;color:#64748b;max-width:600px;line-height:1.7;margin:0;">
+      <p style="font-size:16px;color:#64748b;max-width:580px;line-height:1.75;margin:0;">
         Решение уже используется внутри сети «Этажи» более года и показывает эффект в масштабе: по возврату лидов, окупаемости и управляемости продаж.
       </p>
     </div>
@@ -1701,7 +1705,7 @@
     <div style="display:grid;grid-template-columns:2fr 3fr;gap:20px;margin-bottom:16px;" class="results-main-grid">
 
       <!-- TRUST BLOCK -->
-      <div style="border-radius:24px;padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(59,130,246,0.10) 0%,rgba(139,92,246,0.05) 100%);border:1px solid rgba(59,130,246,0.22);box-shadow:0 0 60px rgba(59,130,246,0.07),inset 0 1px 0 rgba(255,255,255,0.05);">
+      <div class="trust-block" style="border-radius:24px;padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(59,130,246,0.10) 0%,rgba(139,92,246,0.05) 100%);border:1px solid rgba(59,130,246,0.22);box-shadow:0 0 60px rgba(59,130,246,0.07),inset 0 1px 0 rgba(255,255,255,0.05);">
         <div style="position:absolute;top:-70px;left:-70px;width:240px;height:240px;background:radial-gradient(circle,rgba(59,130,246,0.13) 0%,transparent 70%);pointer-events:none;"></div>
 
         <div style="position:relative;z-index:1;">
@@ -1710,8 +1714,8 @@
             <span style="font-size:11px;font-weight:700;color:#93c5fd;letter-spacing:0.1em;text-transform:uppercase;">Сеть «Этажи»</span>
           </div>
 
-          <div style="font-size:clamp(72px,8vw,100px);font-weight:900;letter-spacing:-0.05em;line-height:0.9;margin-bottom:10px;background:linear-gradient(135deg,#ffffff 0%,#93c5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div>
-          <div style="font-size:20px;font-weight:600;color:#cbd5e1;margin-bottom:20px;">городов подключено</div>
+          <div style="font-size:clamp(56px,6vw,80px);font-weight:700;letter-spacing:-0.03em;line-height:1;margin-bottom:10px;background:linear-gradient(135deg,#ffffff 0%,#93c5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div>
+          <div style="font-size:16px;font-weight:500;color:#94a3b8;margin-bottom:20px;">городов подключено</div>
 
           <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0 0 28px;">
             COLVER развёрнут в реальной рабочей среде одной из крупнейших риелторских сетей России. Не пилот — промышленная эксплуатация более&nbsp;года.
@@ -1735,7 +1739,7 @@
 
         <div style="position:relative;z-index:1;margin-top:36px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06);">
           <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-weight:600;margin-bottom:4px;">Партнёр внедрения</div>
-          <div style="font-size:18px;font-weight:700;color:#f1f5f9;">Сеть «Этажи»</div>
+          <div style="font-size:15px;font-weight:600;color:#cbd5e1;">Сеть «Этажи»</div>
           <div style="font-size:13px;color:#475569;">Федеральная риелторская компания</div>
         </div>
       </div>
@@ -1748,8 +1752,8 @@
           onmouseenter="this.style.boxShadow='0 0 40px rgba(16,185,129,0.18)';this.style.transform='translateY(-2px)'"
           onmouseleave="this.style.boxShadow='none';this.style.transform='translateY(0)'">
           <div>
-            <div style="font-size:clamp(44px,4.5vw,64px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">500%+</div>
-            <div style="font-size:13px;font-weight:600;color:#6ee7b7;margin-bottom:12px;">ROI</div>
+            <div style="font-size:clamp(36px,3.5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">500%+</div>
+            <div style="font-size:12px;font-weight:500;color:#6ee7b7;margin-bottom:10px;letter-spacing:0.02em;">ROI</div>
             <div style="font-size:13px;color:#64748b;line-height:1.6;">Высокая окупаемость за счёт возврата упущенных лидов и усиления контроля над продажами</div>
           </div>
           <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,rgba(16,185,129,0.35),transparent);"></div>
@@ -1760,8 +1764,8 @@
           onmouseenter="this.style.boxShadow='0 0 40px rgba(139,92,246,0.18)';this.style.transform='translateY(-2px)'"
           onmouseleave="this.style.boxShadow='none';this.style.transform='translateY(0)'">
           <div>
-            <div style="font-size:clamp(44px,4.5vw,64px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#c4b5fd,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">15%+</div>
-            <div style="font-size:13px;font-weight:600;color:#c4b5fd;margin-bottom:12px;">лидов возвращаются в работу</div>
+            <div style="font-size:clamp(36px,3.5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#c4b5fd,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">15%+</div>
+            <div style="font-size:12px;font-weight:500;color:#c4b5fd;margin-bottom:10px;letter-spacing:0.02em;">лидов возвращаются в работу</div>
             <div style="font-size:13px;color:#64748b;line-height:1.6;">Клиентов, которых уже считали потерянными, система помогает находить и возвращать</div>
           </div>
           <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,rgba(139,92,246,0.35),transparent);"></div>
@@ -1772,8 +1776,8 @@
           onmouseenter="this.style.boxShadow='0 0 40px rgba(59,130,246,0.18)';this.style.transform='translateY(-2px)'"
           onmouseleave="this.style.boxShadow='none';this.style.transform='translateY(0)'">
           <div>
-            <div style="font-size:clamp(44px,4.5vw,64px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#93c5fd,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div>
-            <div style="font-size:13px;font-weight:600;color:#93c5fd;margin-bottom:12px;">городов подключено</div>
+            <div style="font-size:clamp(36px,3.5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#93c5fd,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100+</div>
+            <div style="font-size:12px;font-weight:500;color:#93c5fd;margin-bottom:10px;letter-spacing:0.02em;">городов подключено</div>
             <div style="font-size:13px;color:#64748b;line-height:1.6;">Используется в реальной работе отделов продаж крупнейшей риелторской сети более года</div>
           </div>
           <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,rgba(59,130,246,0.35),transparent);"></div>
@@ -1784,8 +1788,8 @@
           onmouseenter="this.style.boxShadow='0 0 40px rgba(245,158,11,0.18)';this.style.transform='translateY(-2px)'"
           onmouseleave="this.style.boxShadow='none';this.style.transform='translateY(0)'">
           <div>
-            <div style="font-size:clamp(44px,4.5vw,64px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#fcd34d,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">1–2</div>
-            <div style="font-size:13px;font-weight:600;color:#fcd34d;margin-bottom:12px;">сделки окупают инструмент</div>
+            <div style="font-size:clamp(36px,3.5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#fcd34d,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">1–2</div>
+            <div style="font-size:12px;font-weight:500;color:#fcd34d;margin-bottom:10px;letter-spacing:0.02em;">сделки окупают инструмент</div>
             <div style="font-size:13px;color:#64748b;line-height:1.6;">В ряде сценариев инструмент отбивается уже за счёт одной-двух спасённых сделок в городе</div>
           </div>
           <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,rgba(245,158,11,0.35),transparent);"></div>
