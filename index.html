@@ -385,6 +385,30 @@
         color: #60a5fa;
       }
 
+      /* AI demo mockup — vertical stack */
+      .ai-demo-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+      }
+      .ai-demo-panel { flex: none !important; }
+      .ai-demo-label {
+        font-size: 12px !important;
+        letter-spacing: 0.04em !important;
+        white-space: normal !important;
+      }
+      .ai-demo-arrow {
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 12px !important;
+      }
+      .ai-demo-arrow svg:first-child,
+      .ai-demo-arrow svg:last-child {
+        transform: rotate(90deg);
+      }
+      /* AI card padding */
+      .ai-card { padding: 24px !important; }
+
       /* Pilot banner */
       .pilot-banner { flex-direction: column !important; gap: 14px !important; }
       .pilot-banner a { width: 100%; text-align: center; justify-content: center; }
@@ -1362,10 +1386,10 @@
         </div>
 
         <!-- Right: animated message → AI → reply mockup -->
-        <div style="display:flex;align-items:center;gap:16px;">
+        <div class="ai-demo-row" style="display:flex;align-items:center;gap:16px;">
           <!-- Incoming message -->
-          <div style="flex:1;">
-            <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">История диалога</div>
+          <div class="ai-demo-panel" style="flex:1;">
+            <div class="ai-demo-label" style="font-size:10px;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">История диалога</div>
             <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;">
               <div style="background:rgba(255,255,255,0.05);border-radius:8px 8px 8px 2px;padding:8px 10px;font-size:11px;color:#94a3b8;">Интересует двушка в 3 квартале 🏠</div>
               <div style="background:rgba(59,130,246,0.12);border-radius:8px 8px 2px 8px;padding:8px 10px;font-size:11px;color:#93c5fd;text-align:right;">Отправил планировки 👍</div>
@@ -1378,7 +1402,7 @@
           </div>
 
           <!-- Arrow + AI core -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;">
+          <div class="ai-demo-arrow" style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             <div style="width:48px;height:48px;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(99,102,241,0.3));border:1px solid rgba(168,85,247,0.4);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(168,85,247,0.2);">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 012 2v2a2 2 0 01-4 0V4a2 2 0 012-2zM2 12a2 2 0 012-2h2a2 2 0 010 4H4a2 2 0 01-2-2zM18 12a2 2 0 012-2h0a2 2 0 010 4h0a2 2 0 01-2-2z"/></svg>
@@ -1387,8 +1411,8 @@
           </div>
 
           <!-- Generated reply -->
-          <div style="flex:1;">
-            <div style="font-size:10px;color:#4ade80;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">ИИ-ответ · 90 сек</div>
+          <div class="ai-demo-panel" style="flex:1;">
+            <div class="ai-demo-label" style="font-size:10px;color:#4ade80;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">ИИ-ответ · 90 сек</div>
             <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:14px;padding:14px;">
               <div style="background:rgba(34,197,94,0.1);border-radius:8px 8px 2px 8px;padding:10px 12px;font-size:11px;color:#86efac;line-height:1.6;">Добрый день! При 100% оплате предусмотрена скидка 2%. Также есть ипотечная программа от 5,9%. Удобно созвониться сегодня в 18:00? 🙏</div>
               <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
