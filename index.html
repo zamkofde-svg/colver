@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COLVER — ИИ-контроль звонков и коммуникаций</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            g950: '#08090b',
+            g900: '#0d0f13',
+            g800: '#111318',
+            g700: '#161a22',
+          },
+          animation: {
+            'pulse-dot': 'pulseDot 2s ease-in-out infinite',
+            'fade-up': 'fadeUp 0.7s ease-out forwards',
+            'fade-up-d1': 'fadeUp 0.7s 0.1s ease-out forwards',
+            'fade-up-d2': 'fadeUp 0.7s 0.2s ease-out forwards',
+            'fade-up-d3': 'fadeUp 0.7s 0.3s ease-out forwards',
+            'fade-up-d4': 'fadeUp 0.7s 0.4s ease-out forwards',
+            'float': 'float 6s ease-in-out infinite',
+            'float-d': 'float 6s 1s ease-in-out infinite',
+          },
+          keyframes: {
+            pulseDot: {
+              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+              '50%': { opacity: '0.4', transform: 'scale(0.7)' },
+            },
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(22px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #08090b;
+      color: #cbd5e1;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+    }
+
+    /* Glass */
+    .glass {
+      background: rgba(255,255,255,0.028);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.065);
+    }
+    .glass-blue {
+      background: rgba(59,130,246,0.07);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(59,130,246,0.18);
+    }
+    .glass-red {
+      background: rgba(239,68,68,0.07);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(239,68,68,0.22);
+    }
+    .glass-green {
+      background: rgba(34,197,94,0.06);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(34,197,94,0.18);
+    }
+
+    /* Gradients */
+    .grad-blue {
+      background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grad-green {
+      background: linear-gradient(135deg, #4ade80 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glows */
+    .glow-blue-sm { box-shadow: 0 0 22px rgba(59,130,246,0.35); }
+    .glow-blue-md { box-shadow: 0 0 40px rgba(59,130,246,0.2), 0 0 80px rgba(59,130,246,0.08); }
+
+    /* Btn */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 24px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600; font-size: 14px; letter-spacing: -0.01em;
+      border-radius: 10px; border: none; cursor: pointer;
+      box-shadow: 0 0 24px rgba(37,99,235,0.4);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      background: #3b82f6;
+      box-shadow: 0 0 36px rgba(59,130,246,0.55);
+      transform: translateY(-1px);
+    }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8;
+      font-weight: 600; font-size: 14px;
+      border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.16);
+    }
+
+    /* Tag */
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.22);
+      border-radius: 99px;
+      color: #60a5fa;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    }
+
+    /* Header */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 18px 0;
+      transition: all 0.3s;
+    }
+    .header.scrolled {
+      padding: 12px 0;
+      background: rgba(8,9,11,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Input */
+    .inp {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 9px;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .inp::placeholder { color: #334155; }
+    .inp:focus { border-color: rgba(59,130,246,0.45); }
+
+    /* Bar progress */
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s;
+    }
+
+    /* Noise texture overlay */
+    .noise::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    /* How-it-works cards */
+    .how-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }
+    /* Bento cards */
+    .bento-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+    @media (max-width: 768px) {
+      .how-grid { grid-template-columns: 1fr !important; }
+      .how-grid .connector-line { display: none; }
+      .how-grid > div { margin-top: 0 !important; }
+      .bento-grid { grid-template-columns: 1fr !important; }
+      .bento-grid > div[style*="span 2"] { grid-column: span 1 !important; }
+    }
+
+    /* Result cards hover */
+    .result-card:hover {
+      border-color: rgba(255,255,255,0.1) !important;
+      transform: translateY(-3px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    /* Pain items hover */
+    .pain-item:hover {
+      border-color: rgba(239,68,68,0.18) !important;
+      background: rgba(239,68,68,0.04) !important;
+    }
+
+    /* Mobile nav */
+    #mobile-nav { display: none; }
+    @media (max-width: 768px) {
+      #mobile-nav.open { display: block; }
+      .desktop-nav { display: none !important; }
+      .hero-grid { grid-template-columns: 1fr !important; }
+      .hero-right { display: none; }
+      .stats-grid { grid-template-columns: 1fr 1fr !important; }
+      .results-grid { grid-template-columns: 1fr 1fr !important; }
+      .pain-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+    }
+    @media (max-width: 480px) {
+      .results-grid { grid-template-columns: 1fr !important; }
+    }
+
+    /* Animated bar chart */
+    @keyframes growBar {
+      from { height: 4px; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #08090b; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+    .opacity-0-init { opacity: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ HEADER -->
+<header class="header" id="header">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;">
+
+    <!-- Logo -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;background:#2563eb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="1" width="5" height="5" rx="1" stroke="white" stroke-width="1.5"/>
+          <rect x="8" y="1" width="5" height="5" rx="1" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          <rect x="1" y="8" width="5" height="5" rx="1" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          <rect x="8" y="8" width="5" height="5" rx="1" stroke="white" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <span style="font-weight:800;font-size:17px;color:#fff;letter-spacing:-0.03em;">COLVER</span>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="desktop-nav" style="display:flex;gap:28px;align-items:center;">
+      <a href="#features" style="color:#64748b;font-size:13.5px;font-weight:500;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'">Возможности</a>
+      <a href="#how" style="color:#64748b;font-size:13.5px;font-weight:500;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'">Как работает</a>
+      <a href="#roi" style="color:#64748b;font-size:13.5px;font-weight:500;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'">ROI</a>
+      <a href="#pilot" style="color:#64748b;font-size:13.5px;font-weight:500;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'">Пилот</a>
+      <a href="#faq" style="color:#64748b;font-size:13.5px;font-weight:500;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'">FAQ</a>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="#contact" class="btn-primary" style="padding:9px 18px;font-size:13px;">Оставить заявку
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════ HERO -->
+<section style="position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;overflow:hidden;">
+
+  <!-- Background glows -->
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
+    <div style="position:absolute;top:15%;left:10%;width:560px;height:560px;background:radial-gradient(circle,rgba(37,99,235,0.09) 0%,transparent 70%);border-radius:50%;"></div>
+    <div style="position:absolute;bottom:10%;right:5%;width:420px;height:420px;background:radial-gradient(circle,rgba(59,130,246,0.055) 0%,transparent 70%);border-radius:50%;"></div>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:1px;height:70vh;background:linear-gradient(to bottom,transparent,rgba(59,130,246,0.15),transparent);"></div>
+    <!-- Subtle grid -->
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:72px 72px;"></div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;width:100%;position:relative;z-index:1;">
+    <div class="hero-grid" style="display:grid;grid-template-columns:1fr 420px;gap:64px;align-items:center;">
+
+      <!-- ── LEFT ── -->
+      <div>
+        <!-- Tag -->
+        <div class="tag opacity-0-init" id="hero-tag" style="margin-bottom:24px;">
+          <span style="width:6px;height:6px;background:#3b82f6;border-radius:50%;display:inline-block;"></span>
+          ИИ-система контроля продаж недвижимости
+        </div>
+
+        <!-- H1 -->
+        <h1 class="opacity-0-init" id="hero-h1" style="font-size:clamp(36px,4.5vw,58px);font-weight:800;line-height:1.1;letter-spacing:-0.03em;color:#f8fafc;margin:0 0 24px;">
+          Верните <span class="grad-blue">10–15%</span> упущенной выручки<br/>из уже оплаченного трафика
+        </h1>
+
+        <!-- Subhead -->
+        <p class="opacity-0-init" id="hero-sub" style="font-size:16px;line-height:1.7;color:#64748b;max-width:520px;margin:0 0 36px;">
+          Пока рынок давит дорогим трафиком и падающей конверсией, менеджеры теряют горячих клиентов в звонках и мессенджерах. COLVER находит слитые сделки, показывает точки потерь и даёт руководителю готовые сигналы к действию.
+        </p>
+
+        <!-- CTAs -->
+        <div class="opacity-0-init" id="hero-cta" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <a href="#contact" class="btn-primary">
+            Записаться на диагностику
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#features" class="btn-ghost">
+            Посмотреть возможности
+          </a>
+        </div>
+        <p style="font-size:11.5px;color:#475569;margin:0 0 56px;">20 минут. Без жёсткого впаривания. Покажем точки потерь на цифрах.</p>
+
+        <!-- Stats row -->
+        <div class="opacity-0-init stats-grid" id="hero-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding-top:28px;border-top:1px solid rgba(255,255,255,0.05);">
+          <div style="padding-right:24px;">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;" class="grad-blue">+14%</div>
+            <div style="font-size:13px;color:#e2e8f0;font-weight:500;margin-top:2px;">рост конверсии</div>
+            <div style="font-size:11px;color:#475569;margin-top:3px;">агентство, 18 брокеров</div>
+          </div>
+          <div style="padding:0 24px;border-left:1px solid rgba(255,255,255,0.05);">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;" class="grad-blue">8</div>
+            <div style="font-size:13px;color:#e2e8f0;font-weight:500;margin-top:2px;">спасённых сделок</div>
+            <div style="font-size:11px;color:#475569;margin-top:3px;">за первый месяц пилота</div>
+          </div>
+          <div style="padding-left:24px;border-left:1px solid rgba(255,255,255,0.05);">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;" class="grad-blue">100%</div>
+            <div style="font-size:13px;color:#e2e8f0;font-weight:500;margin-top:2px;">звонков под контролем</div>
+            <div style="font-size:11px;color:#475569;margin-top:3px;">вместо ручной выборки</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT — mockups ── -->
+      <div class="hero-right" style="display:flex;flex-direction:column;gap:14px;align-items:flex-end;">
+
+        <!-- Alert card -->
+        <div class="glass-red animate-float" style="border-radius:16px;padding:18px;width:100%;max-width:340px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="flex-shrink:0;margin-top:3px;">
+              <div style="width:8px;height:8px;background:#ef4444;border-radius:50%;animation:pulseDot 1.8s ease-in-out infinite;"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:#f87171;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Алерт · COLVER</div>
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Клиент на 15 млн остывает</div>
+              <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.5;">Менеджер не отправил материалы после звонка · 3 часа без ответа</div>
+              <button style="font-size:12px;padding:7px 14px;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:7px;cursor:pointer;font-weight:600;font-family:Inter,sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.28)'" onmouseout="this.style.background='rgba(239,68,68,0.18)'">
+                Спасти сделку →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard card -->
+        <div class="glass animate-float-d" style="border-radius:16px;padding:20px;width:100%;max-width:340px;">
+          <!-- Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em;text-transform:uppercase;">Дашборд · сегодня</span>
+            <div style="display:flex;gap:5px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>
+            </div>
+          </div>
+
+          <!-- Metrics row -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div class="glass" style="border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:#60a5fa;">142</div>
+              <div style="font-size:10px;color:#475569;margin-top:2px;">Звонков</div>
+            </div>
+            <div class="glass" style="border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:#f87171;">7</div>
+              <div style="font-size:10px;color:#475569;margin-top:2px;">Алертов</div>
+            </div>
+            <div class="glass" style="border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:#4ade80;">7.8</div>
+              <div style="font-size:10px;color:#475569;margin-top:2px;">Оценка</div>
+            </div>
+          </div>
+
+          <!-- Mini bar chart -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:10px;color:#475569;margin-bottom:8px;">Качество звонков · 14 дней</div>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:36px;">
+              <div style="flex:1;background:rgba(59,130,246,0.25);border-radius:3px 3px 0 0;" id="bar0"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.35);border-radius:3px 3px 0 0;" id="bar1"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.22);border-radius:3px 3px 0 0;" id="bar2"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.4);border-radius:3px 3px 0 0;" id="bar3"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.28);border-radius:3px 3px 0 0;" id="bar4"></div>
+              <div style="flex:1;background:rgba(239,68,68,0.35);border-radius:3px 3px 0 0;" id="bar5"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.45);border-radius:3px 3px 0 0;" id="bar6"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.5);border-radius:3px 3px 0 0;" id="bar7"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.32);border-radius:3px 3px 0 0;" id="bar8"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.55);border-radius:3px 3px 0 0;" id="bar9"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.38);border-radius:3px 3px 0 0;" id="bar10"></div>
+              <div style="flex:1;background:rgba(34,197,94,0.4);border-radius:3px 3px 0 0;" id="bar11"></div>
+              <div style="flex:1;background:rgba(59,130,246,0.6);border-radius:3px 3px 0 0;" id="bar12"></div>
+              <div style="flex:1;background:rgba(34,197,94,0.5);border-radius:3px 3px 0 0;" id="bar13"></div>
+            </div>
+          </div>
+
+          <!-- Manager ranking -->
+          <div>
+            <div style="font-size:10px;color:#475569;margin-bottom:10px;">Рейтинг менеджеров</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;">🟢</span>
+                <span style="font-size:12px;color:#94a3b8;width:76px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Алексей К.</span>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                  <div style="width:92%;height:100%;background:#22c55e;border-radius:99px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:#64748b;width:20px;text-align:right;">92</span>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;">🔵</span>
+                <span style="font-size:12px;color:#94a3b8;width:76px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Мария П.</span>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                  <div style="width:78%;height:100%;background:#3b82f6;border-radius:99px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:#64748b;width:20px;text-align:right;">78</span>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;">🟡</span>
+                <span style="font-size:12px;color:#94a3b8;width:76px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Дмитрий С.</span>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                  <div style="width:54%;height:100%;background:#f59e0b;border-radius:99px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:#64748b;width:20px;text-align:right;">54</span>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;">🔴</span>
+                <span style="font-size:12px;color:#94a3b8;width:76px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Ирина В.</span>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                  <div style="width:31%;height:100%;background:#ef4444;border-radius:99px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:#64748b;width:20px;text-align:right;">31</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Form card -->
+        <div class="glass" style="border-radius:16px;padding:20px;width:100%;max-width:340px;" id="hero-form-card">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Записаться на диагностику</div>
+          <form id="hero-form" onsubmit="submitHeroForm(event)" style="display:flex;flex-direction:column;gap:9px;">
+            <input class="inp" type="text" placeholder="Ваше имя" required />
+            <input class="inp" type="tel" placeholder="Телефон" required />
+            <input class="inp" type="text" placeholder="Компания" required />
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:4px;">
+              Записаться
+            </button>
+            <p style="font-size:11px;color:#475569;text-align:center;margin:0;">Имя, телефон, компания — 15 секунд</p>
+          </form>
+          <div id="hero-form-success" style="display:none;text-align:center;padding:20px 0;">
+            <div style="font-size:32px;margin-bottom:8px;">✅</div>
+            <div style="font-weight:700;color:#4ade80;margin-bottom:4px;">Заявка отправлена</div>
+            <div style="font-size:12px;color:#475569;">Свяжемся в течение рабочего дня</div>
+          </div>
+        </div>
+
+      </div><!-- /RIGHT -->
+    </div><!-- /grid -->
+  </div><!-- /container -->
+</section>
+
+<!-- ═══════════════════════════════════════════════ RESULTS -->
+<section id="features" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+
+  <!-- Background glow -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:300px;background:radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:60px;">
+      <div class="tag" style="margin-bottom:20px;">Результаты</div>
+      <h2 style="font-size:clamp(28px,3.5vw,44px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.15;">
+        Не верьте на слово.<br/>Смотрите, что уже находит и возвращает COLVER
+      </h2>
+      <p style="font-size:16px;color:#475569;max-width:520px;margin:0 auto;line-height:1.7;">
+        COLVER помогает вытащить скрытую прибыль из уже оплаченного трафика и текущей клиентской базы.
+      </p>
+    </div>
+
+    <!-- 4 metric cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;" class="results-grid">
+
+      <!-- Card 1 -->
+      <div class="glass result-card" style="border-radius:20px;padding:28px 24px;transition:all 0.3s;cursor:default;">
+        <div style="width:40px;height:40px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+        </div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:10px;" class="grad-blue">+14%</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.4;">рост конверсии в целевое действие</div>
+        <div style="font-size:12px;color:#475569;line-height:1.5;">агентство недвижимости, 18 брокеров</div>
+        <div style="margin-top:18px;height:2px;background:rgba(59,130,246,0.15);border-radius:1px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:linear-gradient(90deg,#3b82f6,#818cf8);border-radius:1px;transition:width 1.2s 0.3s ease;" class="result-bar" data-w="72"></div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="glass result-card" style="border-radius:20px;padding:28px 24px;transition:all 0.3s;cursor:default;">
+        <div style="width:40px;height:40px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:10px;" class="grad-green">8</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.4;">спасённых сделок за первый месяц пилота</div>
+        <div style="font-size:12px;color:#475569;line-height:1.5;">отдел продаж новостроек</div>
+        <div style="margin-top:18px;height:2px;background:rgba(34,197,94,0.12);border-radius:1px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:linear-gradient(90deg,#22c55e,#34d399);border-radius:1px;transition:width 1.2s 0.5s ease;" class="result-bar" data-w="88"></div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="glass result-card" style="border-radius:20px;padding:28px 24px;transition:all 0.3s;cursor:default;">
+        <div style="width:40px;height:40px;background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:10px;background:linear-gradient(135deg,#fb923c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">40</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.4;">упущенных диалогов выявлено за первую неделю</div>
+        <div style="font-size:12px;color:#475569;line-height:1.5;">агентство недвижимости, регион</div>
+        <div style="margin-top:18px;height:2px;background:rgba(251,146,60,0.12);border-radius:1px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:linear-gradient(90deg,#fb923c,#f97316);border-radius:1px;transition:width 1.2s 0.7s ease;" class="result-bar" data-w="60"></div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="glass result-card" style="border-radius:20px;padding:28px 24px;transition:all 0.3s;cursor:default;">
+        <div style="width:40px;height:40px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:10px;background:linear-gradient(135deg,#c084fc,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100%</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.4;">звонков под контролем вместо ручной выборки</div>
+        <div style="font-size:12px;color:#475569;line-height:1.5;">сеть офисов продаж</div>
+        <div style="margin-top:18px;height:2px;background:rgba(168,85,247,0.12);border-radius:1px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:linear-gradient(90deg,#c084fc,#a855f7);border-radius:1px;transition:width 1.2s 0.9s ease;" class="result-bar" data-w="100"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom banner -->
+    <div class="glass" style="border-radius:16px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border:1px solid rgba(59,130,246,0.1);">
+      <p style="margin:0;font-size:14px;color:#64748b;max-width:560px;">
+        Это не выдуманные кейсы — это то, что COLVER находит в реальных отделах продаж недвижимости <span style="color:#94a3b8;font-weight:500;">за первые недели мониторинга.</span>
+      </p>
+      <a href="#contact" class="btn-primary" style="padding:10px 20px;font-size:13px;white-space:nowrap;">
+        Хочу так же →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ PAIN -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+
+  <!-- Right glow -->
+  <div style="position:absolute;top:40%;right:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(239,68,68,0.06) 0%,transparent 70%);pointer-events:none;border-radius:50%;"></div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;" class="pain-grid">
+
+      <!-- LEFT -->
+      <div>
+        <div class="tag" style="margin-bottom:20px;">Почему вы теряете деньги</div>
+        <h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;line-height:1.15;margin:0 0 24px;">
+          Рынок уже не прощает слабый контроль продаж
+        </h2>
+        <p style="font-size:15px;line-height:1.75;color:#64748b;margin:0 0 16px;">
+          Лиды в недвижимости стали дороже. Клиент думает дольше. Конкуренция за сделку выше. Каждый потерянный контакт обходится всё больнее.
+        </p>
+        <p style="font-size:15px;line-height:1.75;color:#64748b;margin:0 0 32px;">
+          В результате вы платите за привлечение, а деньги забирает тот, у кого выше скорость реакции, дисциплина и качество коммуникации.
+        </p>
+
+        <!-- Red callout -->
+        <div class="glass-red" style="border-radius:14px;padding:20px 22px;margin-bottom:32px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span style="font-size:11px;font-weight:700;color:#f87171;letter-spacing:0.06em;text-transform:uppercase;">Ключевой тезис</span>
+          </div>
+          <div style="font-size:15px;font-weight:600;color:#fff;line-height:1.5;">
+            Сегодня слабая управляемость продаж = прямые потери выручки
+          </div>
+        </div>
+
+        <!-- Visual: cost of lost lead -->
+        <div class="glass" style="border-radius:14px;padding:20px 22px;">
+          <div style="font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;">Цена одного потерянного лида</div>
+          <div style="display:flex;align-items:center;gap:0;margin-bottom:4px;">
+            <div style="flex:1;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:#ef4444;">15–30 000 ₽</div>
+              <div style="font-size:11px;color:#475569;margin-top:2px;">стоимость привлечения</div>
+            </div>
+            <div style="color:#475569;font-size:20px;padding:0 8px;">+</div>
+            <div style="flex:1;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:#ef4444;">500 000+ ₽</div>
+              <div style="font-size:11px;color:#475569;margin-top:2px;">упущенная комиссия</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT — checklist of loss points -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#475569;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:16px;">Почему менеджеры теряют клиентов каждый день</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <!-- Item 1 -->
+          <div class="glass pain-item" style="border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;border:1px solid rgba(239,68,68,0.08);transition:all 0.25s;">
+            <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Не перезвонили вовремя</div>
+              <div style="font-size:12px;color:#475569;line-height:1.5;">Клиент ушёл туда, где ответили быстрее</div>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="glass pain-item" style="border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;border:1px solid rgba(239,68,68,0.08);transition:all 0.25s;">
+            <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Не отработали возражение</div>
+              <div style="font-size:12px;color:#475569;line-height:1.5;">Сделка зависла, клиент остыл и выпал из воронки</div>
+            </div>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="glass pain-item" style="border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;border:1px solid rgba(239,68,68,0.08);transition:all 0.25s;">
+            <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Не отправили материалы</div>
+              <div style="font-size:12px;color:#475569;line-height:1.5;">Обещали — не сделали. Интерес клиента угас</div>
+            </div>
+          </div>
+
+          <!-- Item 4 -->
+          <div class="glass pain-item" style="border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;border:1px solid rgba(239,68,68,0.08);transition:all 0.25s;">
+            <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Нет следующего шага</div>
+              <div style="font-size:12px;color:#475569;line-height:1.5;">Диалог завис в воздухе — никаких договорённостей</div>
+            </div>
+          </div>
+
+          <!-- Item 5 -->
+          <div class="glass pain-item" style="border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;border:1px solid rgba(239,68,68,0.08);transition:all 0.25s;">
+            <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Задержка ответа в мессенджере</div>
+              <div style="font-size:12px;color:#475569;line-height:1.5;">SLA нарушен, момент упущен, конкурент уже ответил</div>
+            </div>
+          </div>
+
+          <!-- Footer note -->
+          <div style="padding:14px 18px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);text-align:center;">
+            <span style="font-size:12px;color:#475569;">Это происходит в каждом отделе продаж — каждый день — и <span style="color:#475569;">никто этого не видит без инструмента</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ HOW IT WORKS -->
+<section id="how" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+
+  <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="tag" style="margin-bottom:20px;">Как работает</div>
+      <h2 style="font-size:clamp(28px,3.5vw,44px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.15;">
+        COLVER превращает хаос<br/>в очередь управленческого внимания
+      </h2>
+      <p style="font-size:16px;color:#475569;max-width:500px;margin:0 auto;line-height:1.7;">
+        Не просто собирает данные. Показывает, где вы теряете деньги и что делать прямо сейчас.
+      </p>
+    </div>
+
+    <!-- 3 Steps -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px;position:relative;" class="how-grid">
+
+      <!-- Connector lines (desktop) -->
+      <div style="position:absolute;top:48px;left:calc(33.33% - 10px);right:calc(33.33% - 10px);height:1px;background:linear-gradient(90deg,rgba(59,130,246,0.3),rgba(129,140,248,0.3),rgba(34,197,94,0.3));pointer-events:none;" class="connector-line"></div>
+
+      <!-- Step 1 -->
+      <div class="glass how-card" style="border-radius:20px;padding:32px 28px;border:1px solid rgba(59,130,246,0.15);position:relative;transition:all 0.3s;">
+        <div style="position:absolute;top:28px;right:24px;font-size:56px;font-weight:900;color:rgba(59,130,246,0.08);line-height:1;letter-spacing:-0.05em;pointer-events:none;">01</div>
+        <div style="width:44px;height:44px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative;z-index:1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:12px;line-height:1.3;position:relative;z-index:1;">Находит потерянный момент</div>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.75;margin:0;position:relative;z-index:1;">COLVER анализирует звонки и коммуникации, определяет, где менеджер не дожал клиента, нарушил SLA, не отправил материал или не довёл диалог до следующего шага.</p>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(59,130,246,0.1);">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="font-size:11px;padding:3px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:99px;color:#60a5fa;">100% звонков</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:99px;color:#60a5fa;">Мессенджеры</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:99px;color:#60a5fa;">SLA-контроль</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="glass how-card" style="border-radius:20px;padding:32px 28px;border:1px solid rgba(129,140,248,0.15);position:relative;transition:all 0.3s;margin-top:20px;">
+        <div style="position:absolute;top:28px;right:24px;font-size:56px;font-weight:900;color:rgba(129,140,248,0.08);line-height:1;letter-spacing:-0.05em;pointer-events:none;">02</div>
+        <div style="width:44px;height:44px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.22);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative;z-index:1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:12px;line-height:1.3;position:relative;z-index:1;">Показывает точку потери</div>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.75;margin:0;position:relative;z-index:1;">Не просто «плохой звонок», а понятная причина: просадка на возражении, слабый follow-up, отсутствие целевого действия, провал по этапу воронки или ошибка конкретного менеджера.</p>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(129,140,248,0.1);">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="font-size:11px;padding:3px 10px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.15);border-radius:99px;color:#a5b4fc;">Причина</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.15);border-radius:99px;color:#a5b4fc;">Этап воронки</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.15);border-radius:99px;color:#a5b4fc;">Менеджер</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="glass how-card" style="border-radius:20px;padding:32px 28px;border:1px solid rgba(34,197,94,0.15);position:relative;transition:all 0.3s;">
+        <div style="position:absolute;top:28px;right:24px;font-size:56px;font-weight:900;color:rgba(34,197,94,0.07);line-height:1;letter-spacing:-0.05em;pointer-events:none;">03</div>
+        <div style="width:44px;height:44px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.22);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative;z-index:1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:12px;line-height:1.3;position:relative;z-index:1;">Даёт готовое действие</div>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.75;margin:0;position:relative;z-index:1;">РОП получает не тонну отчётов, а понятный список: кого срочно спасать, где разбирать ошибки, кого доучивать, а чьи практики масштабировать на всю команду.</p>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(34,197,94,0.1);">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="font-size:11px;padding:3px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:99px;color:#4ade80;">Спасти сделку</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:99px;color:#4ade80;">Разобрать ошибку</span>
+            <span style="font-size:11px;padding:3px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:99px;color:#4ade80;">Масштабировать</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom outcome -->
+    <div class="glass" style="border-radius:16px;padding:24px 32px;display:flex;align-items:center;gap:20px;border:1px solid rgba(59,130,246,0.1);flex-wrap:wrap;">
+      <div style="width:40px;height:40px;background:rgba(59,130,246,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <p style="margin:0;font-size:15px;color:#94a3b8;flex:1;line-height:1.6;">
+        Вы быстрее реагируете, возвращаете часть упущенных лидов и строите <span style="color:#e2e8f0;font-weight:600;">управляемый отдел продаж</span> — вместо ручного тушения пожаров.
+      </p>
+      <a href="#contact" class="btn-primary" style="padding:10px 22px;font-size:13px;white-space:nowrap;flex-shrink:0;">
+        Записаться на диагностику →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ DASHBOARD BENTO -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+
+  <div style="position:absolute;bottom:0;right:0;width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,0.055) 0%,transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:56px;">
+      <div class="tag" style="margin-bottom:20px;">Панель управления</div>
+      <h2 style="font-size:clamp(28px,3.5vw,44px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.15;">
+        С первого дня вы получаете не статистику,<br/><span class="grad-blue">а панель управления продажами</span>
+      </h2>
+    </div>
+
+    <!-- BENTO GRID -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:16px;" class="bento-grid">
+
+      <!-- Card 1 — WIDE — 100% coverage + bar chart -->
+      <div class="glass bento-card" style="border-radius:20px;padding:28px;border:1px solid rgba(59,130,246,0.15);grid-column:span 2;transition:all 0.3s;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.22);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:#f8fafc;">100% прослушка и смысловой анализ</div>
+              <div style="font-size:12px;color:#475569;margin-top:2px;">не по словам-маркерам — по смыслу коммуникации</div>
+            </div>
+          </div>
+          <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:5px 12px;">
+            <span style="font-size:12px;font-weight:700;color:#4ade80;">● Работает сейчас</span>
+          </div>
+        </div>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.7;margin:0 0 22px;">Анализ возражений, тепла лида, договорённостей, целевых действий и качества коммуникации каждого звонка и диалога в мессенджере.</p>
+        <!-- Bar chart -->
+        <div style="background:rgba(255,255,255,0.02);border-radius:12px;padding:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:11px;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Оценка звонков · 30 дней</span>
+            <span style="font-size:11px;color:#4ade80;font-weight:700;">↑ 7.8 средняя</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:48px;">
+            <div style="flex:1;background:rgba(59,130,246,0.3);border-radius:3px 3px 0 0;height:60%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.35);border-radius:3px 3px 0 0;height:72%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.25);border-radius:3px 3px 0 0;height:50%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.4);border-radius:3px 3px 0 0;height:85%;"></div>
+            <div style="flex:1;background:rgba(239,68,68,0.4);border-radius:3px 3px 0 0;height:38%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.45);border-radius:3px 3px 0 0;height:80%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.5);border-radius:3px 3px 0 0;height:92%;"></div>
+            <div style="flex:1;background:rgba(239,68,68,0.35);border-radius:3px 3px 0 0;height:42%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.38);border-radius:3px 3px 0 0;height:68%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.55);border-radius:3px 3px 0 0;height:88%;"></div>
+            <div style="flex:1;background:rgba(34,197,94,0.4);border-radius:3px 3px 0 0;height:76%;"></div>
+            <div style="flex:1;background:rgba(59,130,246,0.6);border-radius:3px 3px 0 0;height:95%;"></div>
+            <div style="flex:1;background:rgba(34,197,94,0.5);border-radius:3px 3px 0 0;height:82%;"></div>
+            <div style="flex:1;background:rgba(34,197,94,0.45);border-radius:3px 3px 0 0;height:90%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:10px;color:#475569;">1 мар</span>
+            <span style="font-size:10px;color:#475569;">30 мар</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 — Manager ranking -->
+      <div class="glass bento-card" style="border-radius:20px;padding:24px;border:1px solid rgba(255,255,255,0.06);transition:all 0.3s;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:36px;height:36px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f8fafc;">Рейтинг менеджеров</div>
+            <div style="font-size:11px;color:#475569;">Объективный светофор команды</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;background:rgba(34,197,94,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;">🥇</div>
+            <span style="font-size:12px;color:#94a3b8;flex:1;">Алексей К.</span>
+            <div style="width:80px;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="width:92%;height:100%;background:#22c55e;border-radius:99px;"></div></div>
+            <span style="font-size:11px;font-weight:700;color:#4ade80;width:22px;text-align:right;">92</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;background:rgba(59,130,246,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;">🥈</div>
+            <span style="font-size:12px;color:#94a3b8;flex:1;">Мария П.</span>
+            <div style="width:80px;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="width:78%;height:100%;background:#3b82f6;border-radius:99px;"></div></div>
+            <span style="font-size:11px;font-weight:700;color:#60a5fa;width:22px;text-align:right;">78</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;background:rgba(245,158,11,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;">🥉</div>
+            <span style="font-size:12px;color:#94a3b8;flex:1;">Дмитрий С.</span>
+            <div style="width:80px;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="width:54%;height:100%;background:#f59e0b;border-radius:99px;"></div></div>
+            <span style="font-size:11px;font-weight:700;color:#fbbf24;width:22px;text-align:right;">54</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;background:rgba(239,68,68,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;">⚠️</div>
+            <span style="font-size:12px;color:#94a3b8;flex:1;">Ирина В.</span>
+            <div style="width:80px;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="width:31%;height:100%;background:#ef4444;border-radius:99px;"></div></div>
+            <span style="font-size:11px;font-weight:700;color:#f87171;width:22px;text-align:right;">31</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.04);font-size:11px;color:#475569;">
+          Автоматически. Без ручных таблиц.
+        </div>
+      </div>
+
+      <!-- Card 3 — Alerts -->
+      <div style="border-radius:20px;padding:24px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);transition:all 0.3s;" class="bento-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:36px;height:36px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.22);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f8fafc;">Алерты и очередь внимания</div>
+            <div style="font-size:11px;color:#7f1d1d;">Мгновенная реакция на потерю</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:10px 12px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <div style="width:6px;height:6px;background:#ef4444;border-radius:50%;margin-top:4px;flex-shrink:0;animation:pulseDot 1.8s ease-in-out infinite;"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#fca5a5;">Клиент на 15 млн остывает</div>
+                <div style="font-size:11px;color:#7f1d1d;margin-top:2px;">Нет follow-up · 3 часа</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.1);border-radius:10px;padding:10px 12px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <div style="width:6px;height:6px;background:#ef4444;border-radius:50%;margin-top:4px;flex-shrink:0;"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#fca5a5;">SLA нарушен</div>
+                <div style="font-size:11px;color:#7f1d1d;margin-top:2px;">Ответ > 4 часов · Дмитрий С.</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(239,68,68,0.03);border:1px solid rgba(239,68,68,0.08);border-radius:10px;padding:10px 12px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <div style="width:6px;height:6px;background:#f87171;border-radius:50%;margin-top:4px;flex-shrink:0;opacity:0.5;"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#fca5a5;opacity:0.7;">Нет следующего шага</div>
+                <div style="font-size:11px;color:#7f1d1d;margin-top:2px;">Диалог завис · Ирина В.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 — Loss analytics -->
+      <div class="glass bento-card" style="border-radius:20px;padding:24px;border:1px solid rgba(255,255,255,0.06);transition:all 0.3s;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:36px;height:36px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f8fafc;">Аналитика потерь</div>
+            <div style="font-size:11px;color:#475569;">Где системно теряются сделки</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:#64748b;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Слабый follow-up</span>
+            <div style="width:80px;height:5px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;"><div style="width:38%;height:100%;background:#fb923c;border-radius:99px;"></div></div>
+            <span style="font-size:11px;color:#94a3b8;width:26px;text-align:right;flex-shrink:0;">38%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:#64748b;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Нет целевого действия</span>
+            <div style="width:80px;height:5px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;"><div style="width:27%;height:100%;background:#ef4444;border-radius:99px;"></div></div>
+            <span style="font-size:11px;color:#94a3b8;width:26px;text-align:right;flex-shrink:0;">27%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:#64748b;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Нарушение SLA</span>
+            <div style="width:80px;height:5px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;"><div style="width:21%;height:100%;background:#f59e0b;border-radius:99px;"></div></div>
+            <span style="font-size:11px;color:#94a3b8;width:26px;text-align:right;flex-shrink:0;">21%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:#64748b;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Просадка на возражении</span>
+            <div style="width:80px;height:5px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;"><div style="width:14%;height:100%;background:#60a5fa;border-radius:99px;"></div></div>
+            <span style="font-size:11px;color:#94a3b8;width:26px;text-align:right;flex-shrink:0;">14%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5 — ROD dashboard metrics -->
+      <div class="glass bento-card" style="border-radius:20px;padding:24px;border:1px solid rgba(255,255,255,0.06);transition:all 0.3s;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:36px;height:36px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f8fafc;">Дашборд руководителя</div>
+            <div style="font-size:11px;color:#475569;">Всё важное — на одном экране</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#4ade80;">7.8</div>
+            <div style="font-size:10px;color:#475569;margin-top:2px;">Ср. оценка</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#f87171;">12</div>
+            <div style="font-size:10px;color:#475569;margin-top:2px;">Пустых звонков</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#60a5fa;">↑4%</div>
+            <div style="font-size:10px;color:#475569;margin-top:2px;">Динамика</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#fbbf24;">3</div>
+            <div style="font-size:10px;color:#475569;margin-top:2px;">Зоны риска</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bento-grid -->
+
+    <!-- Bottom note -->
+    <div class="glass" style="margin-top:16px;border-radius:16px;padding:20px 28px;text-align:center;border:1px solid rgba(59,130,246,0.08);">
+      <p style="margin:0;font-size:14px;color:#64748b;">
+        Вы сразу получаете <span style="color:#e2e8f0;font-weight:600;">100% контроль коммуникаций</span> и список конкретных действий для РОПа — без ручной прослушки и гадания на ощущениях.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PRODUCT ROADMAP -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:20%;left:50%;transform:translateX(-50%);width:900px;height:600px;background:radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,rgba(168,85,247,0.04) 40%,transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+
+    <!-- Top wide header card -->
+    <div style="border-radius:24px;padding:48px 52px;background:linear-gradient(135deg,rgba(59,130,246,0.08) 0%,rgba(168,85,247,0.06) 50%,rgba(34,197,94,0.04) 100%);border:1px solid rgba(59,130,246,0.18);margin-bottom:16px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;right:0;width:400px;height:100%;background:linear-gradient(90deg,transparent,rgba(168,85,247,0.04));pointer-events:none;"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:32px;flex-wrap:wrap;position:relative;z-index:1;">
+        <div style="flex:1;min-width:280px;">
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.22);border-radius:99px;margin-bottom:20px;">
+            <span style="width:6px;height:6px;background:#3b82f6;border-radius:50%;display:inline-block;animation:pulseDot 2s ease-in-out infinite;"></span>
+            <span style="font-size:11px;font-weight:700;color:#60a5fa;letter-spacing:0.07em;text-transform:uppercase;">Ближайшие 6 месяцев</span>
+          </div>
+          <h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.15;">COLVER идёт к полному контролю всего цикла продаж</h2>
+          <p style="font-size:15px;color:#64748b;line-height:1.75;margin:0;max-width:560px;">Мы не останавливаемся на текущем функционале. В ближайшие 6 месяцев COLVER усилится в тех точках, где в продажах чаще всего теряются деньги: в переписках, офлайн-коммуникации, CRM и автоматизации на базе лучших практик вашей команды.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+          <div style="text-align:right;font-size:12px;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:4px;">Стадии развития</div>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+            <span style="font-size:12px;color:#4ade80;font-weight:600;">● Уже делаем</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+            <span style="font-size:12px;color:#60a5fa;font-weight:600;">● В разработке</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+            <span style="font-size:12px;color:#a5b4fc;font-weight:600;">● Усиление контура</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+            <span style="font-size:12px;color:#c084fc;font-weight:600;">● Следующий шаг</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BENTO GRID 3-col: row1 = 3 cards, row2 = AI card full width -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" class="roadmap-grid">
+
+      <!-- Card 1: Переписки и SLA -->
+      <div class="glass" style="border-radius:20px;padding:28px;border:1px solid rgba(34,197,94,0.15);transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='rgba(34,197,94,0.3)'" onmouseout="this.style.transform='';this.style.borderColor='rgba(34,197,94,0.15)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div style="width:38px;height:38px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <span style="font-size:10px;padding:3px 10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:99px;color:#4ade80;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Уже делаем</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:8px;">Переписки и SLA</div>
+        <p style="font-size:13px;color:#64748b;line-height:1.65;margin:0 0 20px;">До 80% клиентской коммуникации в недвижимости проходит в чатах. Контролируем скорость ответа, полноту коммуникации и выполнение обещаний.</p>
+        <!-- Mock chat UI -->
+        <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:14px;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+              <div style="width:24px;height:24px;background:rgba(100,116,139,0.3);border-radius:50%;flex-shrink:0;"></div>
+              <div style="background:rgba(255,255,255,0.06);border-radius:10px 10px 10px 2px;padding:8px 12px;max-width:80%;">
+                <div style="font-size:11px;color:#94a3b8;">Добрый день! Меня интересует ЖК...</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding-left:32px;">
+              <div style="width:6px;height:6px;background:#ef4444;border-radius:50%;animation:pulseDot 1.5s ease-in-out infinite;"></div>
+              <span style="font-size:10px;color:#ef4444;font-weight:600;">SLA: 2ч 17мин без ответа</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;flex-direction:row-reverse;">
+              <div style="width:24px;height:24px;background:rgba(59,130,246,0.3);border-radius:50%;flex-shrink:0;"></div>
+              <div style="background:rgba(59,130,246,0.15);border-radius:10px 10px 2px 10px;padding:8px 12px;max-width:80%;">
+                <div style="font-size:11px;color:#93c5fd;">Здравствуйте! Отправлю презентацию</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding-right:32px;justify-content:flex-end;">
+              <div style="width:6px;height:6px;background:#ef4444;border-radius:50%;"></div>
+              <span style="font-size:10px;color:#ef4444;font-weight:600;">Обещание не выполнено</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Офлайн-продажи -->
+      <div class="glass" style="border-radius:20px;padding:28px;border:1px solid rgba(59,130,246,0.12);transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='rgba(59,130,246,0.28)'" onmouseout="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div style="width:38px;height:38px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <span style="font-size:10px;padding:3px 10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:99px;color:#60a5fa;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">В разработке</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:8px;">Офлайн-продажи</div>
+        <p style="font-size:13px;color:#64748b;line-height:1.65;margin:0 0:20px;">Работаем над устройством, которое включит в контур контроля офлайн-коммуникацию — от первого звонка до очной встречи.</p>
+        <!-- Journey visual -->
+        <div style="margin-top:20px;display:flex;align-items:center;gap:0;">
+          <div style="flex:1;text-align:center;">
+            <div style="width:36px;height:36px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 010 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91"/></svg>
+            </div>
+            <div style="font-size:10px;color:#475569;">Звонок</div>
+          </div>
+          <div style="flex:0;color:#475569;font-size:16px;padding:0 4px;">→</div>
+          <div style="flex:1;text-align:center;">
+            <div style="width:36px;height:36px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div style="font-size:10px;color:#475569;">Чат</div>
+          </div>
+          <div style="flex:0;color:#475569;font-size:16px;padding:0 4px;">→</div>
+          <div style="flex:1;text-align:center;">
+            <div style="width:36px;height:36px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;position:relative;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              <div style="position:absolute;top:-4px;right:-4px;width:10px;height:10px;background:#c084fc;border-radius:50%;border:2px solid #08090b;"></div>
+            </div>
+            <div style="font-size:10px;color:#475569;">Встреча</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:10px 12px;background:rgba(59,130,246,0.06);border-radius:8px;font-size:11px;color:#475569;text-align:center;">
+          Весь цикл под контролем — включая офлайн
+        </div>
+      </div>
+
+      <!-- Card 3: CRM Integration -->
+      <div class="glass" style="border-radius:20px;padding:28px;border:1px solid rgba(129,140,248,0.12);transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='rgba(129,140,248,0.28)'" onmouseout="this.style.transform='';this.style.borderColor='rgba(129,140,248,0.12)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div style="width:38px;height:38px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <span style="font-size:10px;padding:3px 10px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.2);border-radius:99px;color:#a5b4fc;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Усиление контура</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:8px;">Интеграция с CRM</div>
+        <p style="font-size:13px;color:#64748b;line-height:1.65;margin:0 0 20px;">Контроль между коммуникацией и воронкой: этапы, карточки, следующие шаги — деньги перестают теряться между системами.</p>
+        <!-- Data flow visual -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.15);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:#a5b4fc;font-weight:600;margin-bottom:4px;">КОММУНИКАЦИЯ</div>
+            <div style="font-size:11px;color:#64748b;">142 звонка<br/>89 чатов</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="width:24px;height:1px;background:linear-gradient(90deg,rgba(129,140,248,0.5),rgba(59,130,246,0.5));"></div>
+            <div style="width:6px;height:6px;background:#a5b4fc;border-radius:50%;animation:pulseDot 2s ease-in-out infinite;"></div>
+            <div style="width:24px;height:1px;background:linear-gradient(90deg,rgba(59,130,246,0.5),rgba(129,140,248,0.5));"></div>
+          </div>
+          <div style="flex:1;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:#60a5fa;font-weight:600;margin-bottom:4px;">CRM</div>
+            <div style="font-size:11px;color:#64748b;">Этапы<br/>Задачи</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#475569;text-align:center;">Синхронизация в реальном времени</div>
+      </div>
+    </div>
+
+    <!-- AI Bots card — full width, most impressive -->
+    <div style="border-radius:20px;padding:36px;background:linear-gradient(135deg,rgba(168,85,247,0.08) 0%,rgba(99,102,241,0.06) 50%,rgba(59,130,246,0.05) 100%);border:1px solid rgba(168,85,247,0.22);position:relative;overflow:hidden;transition:all 0.3s;margin-bottom:16px;" class="ai-card" onmouseover="this.style.borderColor='rgba(192,132,252,0.4)'" onmouseout="this.style.borderColor='rgba(168,85,247,0.22)'">
+      <div style="position:absolute;top:0;right:0;width:50%;height:100%;background:radial-gradient(ellipse at 80% 50%,rgba(168,85,247,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative;z-index:1;" class="ai-inner-grid">
+
+        <!-- Left: description -->
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:42px;height:42px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2V4a2 2 0 012-2zM12 18a2 2 0 012 2v0a2 2 0 01-4 0v0a2 2 0 012-2zM4.93 4.93a2 2 0 012.83 0l1.41 1.41a2 2 0 010 2.83 2 2 0 01-2.83 0L4.93 7.76a2 2 0 010-2.83zM14.83 14.83a2 2 0 012.83 0l1.41 1.41a2 2 0 010 2.83 2 2 0 01-2.83 0l-1.41-1.41a2 2 0 010-2.83zM2 12a2 2 0 012-2h2a2 2 0 010 4H4a2 2 0 01-2-2zM18 12a2 2 0 012-2h0a2 2 0 010 4h0a2 2 0 01-2-2zM4.93 19.07a2 2 0 010-2.83l1.41-1.41a2 2 0 012.83 0 2 2 0 010 2.83l-1.41 1.41a2 2 0 01-2.83 0zM14.83 9.17a2 2 0 010-2.83l1.41-1.41a2 2 0 012.83 0 2 2 0 010 2.83l-1.41 1.41a2 2 0 01-2.83 0z"/></svg>
+            </div>
+            <span style="font-size:10px;padding:4px 12px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);border-radius:99px;color:#c084fc;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Следующий шаг</span>
+          </div>
+          <h3 style="font-size:clamp(20px,2.5vw,28px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 14px;line-height:1.2;">ИИ-боты на лучших практиках команды</h3>
+          <p style="font-size:14px;color:#64748b;line-height:1.75;margin:0 0 20px;">После нескольких месяцев анализа переписок появится возможность внедрять ИИ-ботов, которые знают, как эффективно отвечать клиентам именно в вашем бизнесе. Они используют лучшие практики ваших менеджеров, отвечают быстро и естественно.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);border-radius:8px;">
+              <div style="width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulseDot 1.8s ease-in-out infinite;"></div>
+              <span style="font-size:12px;color:#4ade80;font-weight:600;">Ответ за 2 минуты</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.18);border-radius:8px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span style="font-size:12px;color:#c084fc;font-weight:600;">На основе лучших практик команды</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: animated message → AI → reply mockup -->
+        <div style="display:flex;align-items:center;gap:16px;">
+          <!-- Incoming message -->
+          <div style="flex:1;">
+            <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">История диалога</div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;">
+              <div style="background:rgba(255,255,255,0.05);border-radius:8px 8px 8px 2px;padding:8px 10px;font-size:11px;color:#94a3b8;">Интересует двушка в 3 квартале 🏠</div>
+              <div style="background:rgba(59,130,246,0.12);border-radius:8px 8px 2px 8px;padding:8px 10px;font-size:11px;color:#93c5fd;text-align:right;">Отправил планировки 👍</div>
+              <div style="background:rgba(255,255,255,0.05);border-radius:8px 8px 8px 2px;padding:8px 10px;font-size:11px;color:#94a3b8;">А скидка возможна при 100%?</div>
+              <div style="display:flex;align-items:center;gap:5px;color:#475569;font-size:10px;">
+                <div style="width:4px;height:4px;background:#ef4444;border-radius:50%;animation:pulseDot 1.5s ease-in-out infinite;"></div>
+                4 часа без ответа
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow + AI core -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <div style="width:48px;height:48px;background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(99,102,241,0.3));border:1px solid rgba(168,85,247,0.4);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(168,85,247,0.2);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 012 2v2a2 2 0 01-4 0V4a2 2 0 012-2zM2 12a2 2 0 012-2h2a2 2 0 010 4H4a2 2 0 01-2-2zM18 12a2 2 0 012-2h0a2 2 0 010 4h0a2 2 0 01-2-2z"/></svg>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+
+          <!-- Generated reply -->
+          <div style="flex:1;">
+            <div style="font-size:10px;color:#4ade80;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;text-align:center;">ИИ-ответ · 90 сек</div>
+            <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:14px;padding:14px;">
+              <div style="background:rgba(34,197,94,0.1);border-radius:8px 8px 2px 8px;padding:10px 12px;font-size:11px;color:#86efac;line-height:1.6;">Добрый день! При 100% оплате предусмотрена скидка 2%. Также есть ипотечная программа от 5,9%. Удобно созвониться сегодня в 18:00? 🙏</div>
+              <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
+                <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;"></div>
+                <span style="font-size:10px;color:#4ade80;font-weight:600;">Основан на лучших ответах Алексея К.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom value plashka -->
+    <div style="border-radius:20px;padding:28px 36px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <p style="margin:0;font-size:15px;color:#94a3b8;flex:1;line-height:1.65;max-width:680px;">
+        Вы подключаете продукт, который <span style="color:#e2e8f0;font-weight:600;">уже сейчас</span> помогает возвращать упущенную выручку, а в ближайшие полгода закроет ещё больше критичных зон продаж — вплоть до автоматизации части коммуникаций.
+      </p>
+      <a href="#contact" class="btn-primary" style="padding:12px 24px;white-space:nowrap;flex-shrink:0;">
+        Войти первым →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ ROI CALCULATOR -->
+<section id="roi" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:960px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:20px;">Калькулятор потерь</div>
+      <h2 style="font-size:clamp(28px,3.5vw,44px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 14px;line-height:1.15;">Посчитайте, сколько денег вы теряете прямо сейчас</h2>
+      <p style="font-size:15px;color:#475569;margin:0 auto;">Передвигайте ползунки — система покажет ваши реальные потери и потенциал роста.</p>
+    </div>
+
+    <div class="glass" style="border-radius:24px;padding:44px;border:1px solid rgba(59,130,246,0.12);">
+      <!-- Sliders -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-bottom:36px;" class="calc-sliders">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+            <label style="font-size:13px;color:#64748b;font-weight:500;">Лидов в месяц</label>
+            <span style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.03em;" id="leads-val">150</span>
+          </div>
+          <input type="range" min="20" max="1000" step="10" value="150" id="leads-slider" style="width:100%;accent-color:#3b82f6;"/>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:#475569;">20</span><span style="font-size:11px;color:#475569;">1 000</span>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+            <label style="font-size:13px;color:#64748b;font-weight:500;">Текущая конверсия</label>
+            <span style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.03em;" id="conv-val">8%</span>
+          </div>
+          <input type="range" min="1" max="30" step="0.5" value="8" id="conv-slider" style="width:100%;accent-color:#3b82f6;"/>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:#475569;">1%</span><span style="font-size:11px;color:#475569;">30%</span>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+            <label style="font-size:13px;color:#64748b;font-weight:500;">Средний чек</label>
+            <span style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.03em;" id="check-val">500 тыс ₽</span>
+          </div>
+          <input type="range" min="5000" max="1000000" step="5000" value="500000" id="check-slider" style="width:100%;accent-color:#3b82f6;"/>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:#475569;">5 тыс</span><span style="font-size:11px;color:#475569;">1 млн</span>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+            <label style="font-size:13px;color:#64748b;font-weight:500;">Возврат лидов</label>
+            <span style="font-size:24px;font-weight:800;letter-spacing:-0.03em;" id="ret-val" style="color:#4ade80;">10%</span>
+          </div>
+          <input type="range" min="10" max="50" step="5" value="10" id="ret-slider" style="width:100%;accent-color:#4ade80;"/>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:#475569;">10%</span><span style="font-size:11px;color:#475569;">50%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two panels: current revenue + losses -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;" class="rev-panels">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:22px;text-align:center;">
+          <div style="font-size:11px;color:#64748b;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Текущая выручка / месяц</div>
+          <div style="font-size:clamp(26px,4vw,42px);font-weight:900;color:#fff;letter-spacing:-0.04em;line-height:1;" id="current-rev">60 000 000 ₽</div>
+          <div style="font-size:11px;color:#475569;margin-top:6px;" id="rev-formula">150 × 8% × 5 млн</div>
+        </div>
+        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:16px;padding:22px;text-align:center;">
+          <div style="font-size:11px;color:#4ade80;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Потенциал роста с COLVER</div>
+          <div style="font-size:clamp(26px,4vw,42px);font-weight:900;letter-spacing:-0.04em;line-height:1;color:#4ade80;" id="loss-rev">—</div>
+          <div style="font-size:11px;color:#86efac;margin-top:6px;" id="loss-deals">— сделок можно вернуть</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;margin-bottom:28px;" id="calc-cta-wrap">
+        <button onclick="showScenarios()" class="btn-primary" style="padding:15px 40px;font-size:15px;font-weight:700;">
+          Показать, сколько вернёт COLVER
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Scenarios -->
+      <div id="scenarios" style="display:none;">
+        <div style="font-size:12px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;text-align:center;margin-bottom:16px;">Сколько сделок вернёт COLVER</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;" class="scenarios-grid">
+          <div style="border-radius:16px;padding:22px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);">
+            <div style="font-size:11px;font-weight:700;color:#60a5fa;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:4px;">Консервативно</div>
+            <div style="font-size:12px;color:#475569;margin-bottom:14px;" id="s1-label">—</div>
+            <div style="font-size:clamp(20px,2.8vw,28px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;" id="s1-rev">—</div>
+            <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-top:5px;" id="s1-gain">—</div>
+          </div>
+          <div style="border-radius:16px;padding:22px;background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.22);">
+            <div style="font-size:11px;font-weight:700;color:#a5b4fc;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:4px;">Базовый</div>
+            <div style="font-size:12px;color:#475569;margin-bottom:14px;" id="s2-label">—</div>
+            <div style="font-size:clamp(20px,2.8vw,28px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;" id="s2-rev">—</div>
+            <div style="font-size:13px;font-weight:700;color:#a5b4fc;margin-top:5px;" id="s2-gain">—</div>
+          </div>
+          <div style="border-radius:16px;padding:22px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);">
+            <div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:4px;">Сильный</div>
+            <div style="font-size:12px;color:#475569;margin-bottom:14px;" id="s3-label">—</div>
+            <div style="font-size:clamp(20px,2.8vw,28px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;" id="s3-rev">—</div>
+            <div style="font-size:13px;font-weight:700;color:#4ade80;margin-top:5px;" id="s3-gain">—</div>
+          </div>
+        </div>
+        <p style="font-size:12px;color:#475569;text-align:center;margin:0 0 20px;">Без роста рекламного бюджета — только за счёт работы с уже оплаченными лидами.</p>
+        <a href="#contact" class="btn-primary" style="display:flex;width:100%;justify-content:center;padding:15px;font-size:15px;">
+          Записаться на диагностику →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOR WHOM -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;">
+  <div style="max-width:1000px;margin:0 auto;padding:0 24px;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:20px;">Целевая аудитория</div>
+      <h2 style="font-size:clamp(28px,3.5vw,44px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0;line-height:1.15;">COLVER создан не для всех</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="whom-grid">
+
+      <!-- Not for -->
+      <div class="glass" style="border-radius:20px;padding:32px;border:1px solid rgba(239,68,68,0.1);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+          <div style="width:32px;height:32px;background:rgba(239,68,68,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+          <span style="font-size:15px;font-weight:700;color:#fca5a5;">Вам это не нужно, если:</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#64748b;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#ef4444;border-radius:50%;margin-top:8px;flex-shrink:0;opacity:0.5;"></div>
+            Вас устраивает, что часть лидов сгорает внутри отдела продаж
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#64748b;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#ef4444;border-radius:50%;margin-top:8px;flex-shrink:0;opacity:0.5;"></div>
+            Вы готовы и дальше вручную слушать звонки и контролировать менеджеров
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#64748b;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#ef4444;border-radius:50%;margin-top:8px;flex-shrink:0;opacity:0.5;"></div>
+            Вам достаточно красивых отчётов без реального влияния на выручку
+          </div>
+        </div>
+      </div>
+
+      <!-- For -->
+      <div style="border-radius:20px;padding:32px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+          <div style="width:32px;height:32px;background:rgba(34,197,94,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <span style="font-size:15px;font-weight:700;color:#4ade80;">Вам это нужно, если:</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#22c55e;border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
+            Вы понимаете, что на сложном рынке выигрывает тот, у кого выше конверсия
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#22c55e;border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
+            Вы хотите точно знать, где и почему теряются сделки
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#22c55e;border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
+            Вы хотите выжимать максимум из уже оплаченного трафика
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <div style="width:5px;height:5px;background:#22c55e;border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
+            Вам нужен не отчёт, а инструмент управленческого влияния на деньги
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:28px;font-size:14px;color:#475569;">
+      COLVER — для прагматичных руководителей, которым нужен <span style="color:#e2e8f0;font-weight:600;">контроль, скорость реакции и возврат упущенной выручки.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ NO SCRIPTS -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(34,197,94,0.05) 0%,transparent 70%);pointer-events:none;border-radius:50%;"></div>
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;" class="noscript-grid">
+      <div>
+        <div class="tag" style="margin-bottom:20px;">Без скриптовых наручников</div>
+        <h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;line-height:1.15;margin:0 0 24px;">COLVER не убивает сильных менеджеров скриптами</h2>
+        <p style="font-size:15px;line-height:1.75;color:#64748b;margin:0 0 16px;">Обычная речевая аналитика часто работает как бездушный надзиратель: шаг в сторону от шаблона — минус балл. Это раздражает сильных брокеров и убивает инициативу.</p>
+        <p style="font-size:15px;line-height:1.75;color:#64748b;margin:0 0 28px;">COLVER оценивает не «красоту чтения скрипта», а качество процесса и итоговый результат. Если менеджер говорит по-своему, но ведёт клиента к сделке эффективно — система не наказывает за стиль.</p>
+        <div style="border-radius:14px;padding:20px 22px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);">
+          <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:6px;">Итог</div>
+          <div style="font-size:14px;color:#94a3b8;line-height:1.6;">Мы не ломаем сильных — мы находим их лучшие практики и помогаем <span style="color:#e2e8f0;font-weight:600;">масштабировать их на всю команду.</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <!-- Bad -->
+        <div class="glass" style="border-radius:16px;padding:24px;border:1px solid rgba(239,68,68,0.1);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="width:28px;height:28px;background:rgba(239,68,68,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#f87171;">Обычная аналитика</span>
+          </div>
+          <p style="font-size:13px;color:#64748b;line-height:1.65;margin:0;">Оценивает соответствие скрипту. Сильные менеджеры под давлением — конфликты, демотивация, текучка.</p>
+        </div>
+        <!-- Good -->
+        <div style="border-radius:16px;padding:24px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="width:28px;height:28px;background:rgba(34,197,94,0.12);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#4ade80;">COLVER</span>
+          </div>
+          <p style="font-size:13px;color:#94a3b8;line-height:1.65;margin:0;">Оценивает процесс и результат. Лучшие становятся ориентиром — их практики масштабируются на команду.</p>
+        </div>
+        <!-- Visual -->
+        <div class="glass" style="border-radius:16px;padding:20px 24px;">
+          <div style="font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;">Как меняется команда</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:12px;color:#64748b;width:80px;">До COLVER</span>
+              <div style="flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                <div style="width:35%;height:100%;background:linear-gradient(90deg,#22c55e,#22c55e 35%,#f59e0b 35%,#f59e0b 65%,#ef4444 65%);border-radius:99px;"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:12px;color:#64748b;width:80px;">После 90 дней</span>
+              <div style="flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+                <div style="width:75%;height:100%;background:linear-gradient(90deg,#22c55e,#22c55e 60%,#3b82f6 60%,#3b82f6 80%,#f59e0b 80%);border-radius:99px;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:10px;">
+            <span style="font-size:10px;color:#22c55e;">■ Сильные</span>
+            <span style="font-size:10px;color:#3b82f6;">■ Средние</span>
+            <span style="font-size:10px;color:#f59e0b;">■ Слабые</span>
+            <span style="font-size:10px;color:#ef4444;">■ Аутсайдеры</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TRUST -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);">
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:20px;">Почему нам можно верить</div>
+      <h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.15;">COLVER создан внутри реальной среды<br/>продаж недвижимости</h2>
+      <p style="font-size:15px;color:#475569;max-width:580px;margin:0 auto;line-height:1.7;">Продукт компании <span style="color:#94a3b8;font-weight:600;">ESOFT</span> — технологической компании группы «Этажи». Система понимает специфику воронки, типовые возражения и реальные точки, где теряются деньги.</p>
+    </div>
+
+    <!-- Big stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" class="trust-stats-grid">
+      <div class="glass" style="border-radius:20px;padding:32px 28px;text-align:center;border:1px solid rgba(59,130,246,0.12);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:60px;background:radial-gradient(ellipse,rgba(59,130,246,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:8px;" class="grad-blue">500 000+</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">минут в месяц</div>
+        <div style="font-size:12px;color:#475569;">уже анализируем в боевых отделах продаж</div>
+      </div>
+      <div style="border-radius:20px;padding:32px 28px;text-align:center;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:60px;background:radial-gradient(ellipse,rgba(34,197,94,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:8px;" class="grad-green">ROI &gt;500%</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">возврат на инвестиции</div>
+        <div style="font-size:12px;color:#475569;">по результатам запущенных пилотов</div>
+      </div>
+      <div class="glass" style="border-radius:20px;padding:32px 28px;text-align:center;border:1px solid rgba(168,85,247,0.12);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:60px;background:radial-gradient(ellipse,rgba(168,85,247,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,#c084fc,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100%</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">отраслевой фокус</div>
+        <div style="font-size:12px;color:#475569;">только недвижимость — не универсальный инструмент</div>
+      </div>
+    </div>
+
+    <!-- Bottom badges row -->
+    <div class="glass" style="border-radius:20px;padding:24px 32px;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;background:rgba(59,130,246,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">ESOFT</div>
+          <div style="font-size:11px;color:#475569;">Технологическая компания группы «Этажи»</div>
+        </div>
+      </div>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.06);"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;background:rgba(34,197,94,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">Боевая среда</div>
+          <div style="font-size:11px;color:#475569;">Разработано на реальных сценариях продаж</div>
+        </div>
+      </div>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.06);"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;background:rgba(251,146,60,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">Прагматичный продукт</div>
+          <div style="font-size:11px;color:#475569;">Не отчёты — управленческое влияние на выручку</div>
+        </div>
+      </div>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.06);"></div>
+      <a href="#contact" class="btn-primary" style="padding:10px 22px;font-size:13px;white-space:nowrap;flex-shrink:0;">
+        Обсудить проект →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ COMPARISON TABLE -->
+<section style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);">
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:20px;">Сравнение</div>
+      <h2 style="font-size:clamp(24px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0;line-height:1.15;">Почему COLVER эффективнее ручного контроля<br/>и обычной речевой аналитики</h2>
+    </div>
+    <div class="glass" style="border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);">
+      <!-- Table header -->
+      <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:rgba(255,255,255,0.03);">
+        <div style="padding:16px 20px;font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Параметр</div>
+        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
+          <div style="font-size:13px;font-weight:600;color:#64748b;">Обычный РОП / ОКК</div>
+        </div>
+        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
+          <div style="font-size:13px;font-weight:600;color:#64748b;">Базовая речевая<br/>аналитика</div>
+        </div>
+        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.06);">
+          <div style="font-size:13px;font-weight:700;color:#60a5fa;">COLVER</div>
+        </div>
+      </div>
+      <!-- Rows -->
+      <div id="table-rows"></div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:14px;color:#475569;">COLVER — это не замена руководителю. Это <span style="color:#e2e8f0;font-weight:600;">усилитель управленческого влияния на выручку.</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PILOT -->
+<section id="pilot" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:20%;right:-80px;width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,0.06) 0%,transparent 70%);pointer-events:none;border-radius:50%;"></div>
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+
+    <div style="text-align:center;margin-bottom:56px;">
+      <div class="tag" style="margin-bottom:20px;">Пилот</div>
+      <h2 style="font-size:clamp(28px,3.5vw,46px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 14px;line-height:1.1;">Безопасный пилот — без нагрузки<br/>на вашу команду</h2>
+      <p style="font-size:15px;color:#475569;max-width:520px;margin:0 auto;line-height:1.7;">Запускаем пилот, быстро показываем эффект на ваших данных — и только потом принимаем решение о масштабе.</p>
+    </div>
+
+    <!-- OFFER BANNER (first 5 clients) -->
+    <div style="border-radius:20px;padding:24px 32px;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(59,130,246,0.06));border:1px solid rgba(34,197,94,0.22);display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+      <div style="width:44px;height:44px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:#4ade80;margin-bottom:3px;">Первым 5 клиентам — пилот бесплатно · осталось 3 места</div>
+        <div style="font-size:13px;color:#64748b;">Интеграция, настройка и запуск — за наш счёт. Платите только за минуты после старта.</div>
+      </div>
+      <a href="#contact" class="btn-primary" style="padding:11px 24px;font-size:13px;background:#16a34a;box-shadow:0 0 20px rgba(34,197,94,0.3);white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#22c55e'" onmouseout="this.style.background='#16a34a'">
+        Занять место →
+      </a>
+    </div>
+
+    <!-- Main 3-panel grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" class="pilot-grid">
+
+      <!-- Left: what's included + steps combined -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Included -->
+        <div class="glass" style="border-radius:20px;padding:28px;flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;background:rgba(34,197,94,0.12);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            Что входит — всё за наш счёт
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Подключение телефонии
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Интеграция с CRM
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Настройка логики
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Дашборд руководителя
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Рейтинг менеджеров
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Аналитика потерь
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#94a3b8;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;grid-column:span 2;">
+              <div style="width:5px;height:5px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>Алерты и очередь внимания для РОПа
+            </div>
+          </div>
+        </div>
+
+        <!-- Steps -->
+        <div class="glass" style="border-radius:20px;padding:28px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:18px;">Как проходит пилот</div>
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;gap:14px;">
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div style="width:28px;height:28px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#60a5fa;flex-shrink:0;">1</div>
+                <div style="width:1px;flex:1;background:rgba(59,130,246,0.12);margin:4px 0;"></div>
+              </div>
+              <div style="padding-bottom:16px;">
+                <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Подключение</div>
+                <div style="font-size:12px;color:#475569;line-height:1.6;">Интегрируемся в вашу инфраструктуру, запускаем сбор данных.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;">
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div style="width:28px;height:28px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#60a5fa;flex-shrink:0;">2</div>
+                <div style="width:1px;flex:1;background:rgba(59,130,246,0.12);margin:4px 0;"></div>
+              </div>
+              <div style="padding-bottom:16px;">
+                <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Боевой мониторинг</div>
+                <div style="font-size:12px;color:#475569;line-height:1.6;">Анализируем реальный трафик, показываем потери и системные ошибки.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;">
+              <div style="width:28px;height:28px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#4ade80;flex-shrink:0;">3</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:3px;">Результат</div>
+                <div style="font-size:12px;color:#475569;line-height:1.6;">Упущенные лиды, системные ошибки, очередь внимания для РОПа.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: pricing card -->
+      <div style="border-radius:20px;padding:36px;background:linear-gradient(160deg,rgba(59,130,246,0.08) 0%,rgba(99,102,241,0.05) 100%);border:1px solid rgba(59,130,246,0.2);display:flex;flex-direction:column;gap:20px;">
+        <div>
+          <div style="font-size:12px;color:#60a5fa;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:16px;">Условия после пилота</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px;">
+              <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">Интеграция и настройка</div>
+              <div style="font-size:12px;color:#475569;">За наш счёт на всё время работы</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px;">
+              <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">Модель оплаты</div>
+              <div style="font-size:12px;color:#475569;">Только за фактическую обработку минут</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price range -->
+        <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:16px;padding:22px 24px;">
+          <div style="font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;">Стоимость в боевом режиме</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+            <span style="font-size:40px;font-weight:900;letter-spacing:-0.04em;line-height:1;" class="grad-blue">от 10 000 ₽</span>
+          </div>
+          <div style="font-size:12px;color:#475569;margin-bottom:14px;">в месяц · оплата за фактические минуты</div>
+
+          <!-- Minute calculator -->
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+            <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:10px;">Считайте под себя:</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <input
+                id="min-input"
+                type="number"
+                min="1000"
+                step="1000"
+                value="10000"
+                oninput="calcMinutes()"
+                style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:15px;font-weight:700;outline:none;-moz-appearance:textfield;"
+                placeholder="Минут в месяц"
+              />
+              <span style="white-space:nowrap;font-size:12px;color:#64748b;flex-shrink:0;">мин/мес</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#64748b;">Стоимость:</span>
+              <span id="min-cost" style="font-size:18px;font-weight:800;color:#60a5fa;letter-spacing:-0.03em;">50 000 ₽</span>
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(59,130,246,0.15);margin-bottom:14px;"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulseDot 1.8s ease-in-out infinite;flex-shrink:0;"></div>
+            <span style="font-size:13px;color:#4ade80;font-weight:700;">Интеграция и настройка — за наш счёт</span>
+          </div>
+        </div>
+
+        <!-- ROI teaser -->
+        <div style="background:rgba(255,255,255,0.02);border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:12px;color:#475569;font-weight:600;margin-bottom:8px;">Типичный ROI пилота</div>
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span style="font-size:28px;font-weight:800;color:#4ade80;">500%+</span>
+            <span style="font-size:12px;color:#475569;">— возврат уже в первый месяц</span>
+          </div>
+        </div>
+
+        <a href="#contact" class="btn-primary" style="justify-content:center;padding:14px;font-size:14px;">
+          Запустить пилот →
+        </a>
+        <p style="font-size:11px;color:#475569;text-align:center;margin:-10px 0 0;">Осталось мест: <span style="color:#4ade80;font-weight:700;">3 из 5</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ SECURITY -->
+<section id="security" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <!-- bg glow -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(59,130,246,0.05) 0%,transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:56px;">
+      <div class="tag" style="margin-bottom:18px;">Безопасность</div>
+      <h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 14px;">Ваши данные — под защитой крепости</h2>
+      <p style="font-size:15px;color:#475569;max-width:640px;margin:0 auto;line-height:1.7;">Клиентская база, воронка, сценарии менеджеров — всё защищено на каждом уровне. Безопасность заложена в архитектуру с первого дня внедрения.</p>
+    </div>
+
+    <!-- Main layout: fortress left + pillars right -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;" class="sec-main-grid">
+
+      <!-- Fortress SVG animation -->
+      <div style="display:flex;justify-content:center;align-items:center;">
+        <div style="position:relative;width:320px;height:320px;">
+          <!-- Outer ring pulse -->
+          <svg style="position:absolute;top:0;left:0;width:100%;height:100%;" viewBox="0 0 320 320" fill="none">
+            <circle cx="160" cy="160" r="148" stroke="rgba(59,130,246,0.08)" stroke-width="1" stroke-dasharray="6 8"/>
+            <circle cx="160" cy="160" r="148" stroke="rgba(59,130,246,0.18)" stroke-width="1.5" stroke-dasharray="6 8" style="animation:rotateRing 18s linear infinite;transform-origin:160px 160px;"/>
+            <circle cx="160" cy="160" r="118" stroke="rgba(99,102,241,0.1)" stroke-width="1" stroke-dasharray="4 10"/>
+            <circle cx="160" cy="160" r="118" stroke="rgba(99,102,241,0.2)" stroke-width="1" stroke-dasharray="4 10" style="animation:rotateRing 12s linear infinite reverse;transform-origin:160px 160px;"/>
+          </svg>
+          <!-- Fortress SVG centered -->
+          <svg style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);" width="160" height="170" viewBox="0 0 160 170" fill="none">
+            <!-- Base wall -->
+            <rect x="12" y="90" width="136" height="72" rx="4" fill="rgba(30,41,59,0.9)" stroke="rgba(59,130,246,0.35)" stroke-width="1.5"/>
+            <!-- Gate -->
+            <rect x="60" y="118" width="40" height="44" rx="3" fill="rgba(15,23,42,0.95)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+            <path d="M60 118 Q80 106 100 118" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" fill="none"/>
+            <!-- Left tower -->
+            <rect x="6" y="58" width="36" height="96" rx="4" fill="rgba(30,41,59,0.95)" stroke="rgba(59,130,246,0.4)" stroke-width="1.5"/>
+            <!-- Left battlements -->
+            <rect x="6" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <rect x="19" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <rect x="32" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <!-- Right tower -->
+            <rect x="118" y="58" width="36" height="96" rx="4" fill="rgba(30,41,59,0.95)" stroke="rgba(59,130,246,0.4)" stroke-width="1.5"/>
+            <!-- Right battlements -->
+            <rect x="118" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <rect x="131" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <rect x="144" y="46" width="8" height="18" rx="2" fill="rgba(37,99,235,0.6)" stroke="rgba(59,130,246,0.5)" stroke-width="1"/>
+            <!-- Center tower -->
+            <rect x="50" y="36" width="60" height="78" rx="4" fill="rgba(23,37,84,0.95)" stroke="rgba(79,70,229,0.5)" stroke-width="1.5"/>
+            <!-- Center battlements -->
+            <rect x="50" y="22" width="9" height="20" rx="2" fill="rgba(99,102,241,0.7)" stroke="rgba(99,102,241,0.6)" stroke-width="1"/>
+            <rect x="65" y="22" width="9" height="20" rx="2" fill="rgba(99,102,241,0.7)" stroke="rgba(99,102,241,0.6)" stroke-width="1"/>
+            <rect x="80" y="22" width="9" height="20" rx="2" fill="rgba(99,102,241,0.7)" stroke="rgba(99,102,241,0.6)" stroke-width="1"/>
+            <rect x="95" y="22" width="9" height="20" rx="2" fill="rgba(99,102,241,0.7)" stroke="rgba(99,102,241,0.6)" stroke-width="1"/>
+            <rect x="101" y="22" width="9" height="20" rx="2" fill="rgba(99,102,241,0.7)" stroke="rgba(99,102,241,0.6)" stroke-width="1"/>
+            <!-- Shield / lock icon center tower -->
+            <path d="M80 48 L68 53 L68 68 Q68 78 80 83 Q92 78 92 68 L92 53 Z" fill="rgba(37,99,235,0.2)" stroke="rgba(59,130,246,0.7)" stroke-width="1.5"/>
+            <rect x="75" y="62" width="10" height="8" rx="2" fill="rgba(59,130,246,0.9)" stroke="rgba(147,197,253,0.5)" stroke-width="1"/>
+            <path d="M77 62 L77 59 Q77 55 80 55 Q83 55 83 59 L83 62" stroke="rgba(147,197,253,0.8)" stroke-width="1.5" fill="none"/>
+            <!-- Glow under -->
+            <ellipse cx="80" cy="162" rx="50" ry="6" fill="rgba(37,99,235,0.15)"/>
+            <!-- Window lights -->
+            <rect x="18" y="74" width="10" height="7" rx="1" fill="rgba(96,165,250,0.4)" style="animation:windowBlink 3.5s ease-in-out infinite;"/>
+            <rect x="132" y="74" width="10" height="7" rx="1" fill="rgba(96,165,250,0.4)" style="animation:windowBlink 3.5s ease-in-out 1.2s infinite;"/>
+            <rect x="57" y="48" width="8" height="6" rx="1" fill="rgba(129,140,248,0.5)" style="animation:windowBlink 4s ease-in-out 0.8s infinite;"/>
+            <rect x="95" y="48" width="8" height="6" rx="1" fill="rgba(129,140,248,0.5)" style="animation:windowBlink 4s ease-in-out 2s infinite;"/>
+          </svg>
+          <!-- Orbiting shield particles -->
+          <div style="position:absolute;top:50%;left:50%;width:100%;height:100%;animation:rotateRingDiv 8s linear infinite;transform-origin:0 0;">
+            <div style="position:absolute;top:-148px;left:-4px;width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,0.8);box-shadow:0 0 8px rgba(59,130,246,0.6);"></div>
+          </div>
+          <div style="position:absolute;top:50%;left:50%;width:100%;height:100%;animation:rotateRingDiv 8s linear infinite reverse;transform-origin:0 0;animation-delay:-4s;">
+            <div style="position:absolute;top:-118px;left:-3px;width:6px;height:6px;border-radius:50%;background:rgba(99,102,241,0.8);box-shadow:0 0 6px rgba(99,102,241,0.6);"></div>
+          </div>
+          <!-- Label -->
+          <div style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em;text-transform:uppercase;">Данные защищены</div>
+        </div>
+      </div>
+
+      <!-- Security pillars -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="glass" style="border-radius:16px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px;border:1px solid rgba(59,130,246,0.12);transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.background='rgba(37,99,235,0.06)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.12)';this.style.background='rgba(255,255,255,0.028)'">
+          <div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.12);border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;">NDA и юридическая ответственность</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;">Договор с юридически закреплённой ответственностью за разглашение данных</div>
+          </div>
+        </div>
+
+        <div class="glass" style="border-radius:16px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px;border:1px solid rgba(59,130,246,0.12);transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.background='rgba(37,99,235,0.06)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.12)';this.style.background='rgba(255,255,255,0.028)'">
+          <div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.12);border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Шифрование данных end-to-end</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;">Записи звонков и данные клиентов хранятся в зашифрованном виде, без открытого доступа</div>
+          </div>
+        </div>
+
+        <div class="glass" style="border-radius:16px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px;border:1px solid rgba(59,130,246,0.12);transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.background='rgba(37,99,235,0.06)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.12)';this.style.background='rgba(255,255,255,0.028)'">
+          <div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.12);border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Изолированный контур данных</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;">Ваша база не смешивается с данными других клиентов — отдельное хранилище на проекте</div>
+          </div>
+        </div>
+
+        <div class="glass" style="border-radius:16px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px;border:1px solid rgba(59,130,246,0.12);transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.background='rgba(37,99,235,0.06)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.12)';this.style.background='rgba(255,255,255,0.028)'">
+          <div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.12);border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Ролевой контроль доступа</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;">Только нужные люди видят нужные данные — руководитель, менеджер, аналитик</div>
+          </div>
+        </div>
+
+        <div class="glass" style="border-radius:16px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px;border:1px solid rgba(59,130,246,0.12);transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.background='rgba(37,99,235,0.06)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.12)';this.style.background='rgba(255,255,255,0.028)'">
+          <div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.12);border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Безопасная интеграция с CRM и телефонией</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;">Подключение через официальные API без хранения паролей и токенов в открытом виде</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FAQ -->
+<section id="faq" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);">
+  <div style="max-width:720px;margin:0 auto;padding:0 24px;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:18px;">FAQ</div>
+      <h2 style="font-size:clamp(26px,3vw,38px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0;">Частые вопросы</h2>
+    </div>
+    <div id="faq-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FINAL CTA -->
+<section id="contact" style="padding:100px 0;border-top:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(37,99,235,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:1000px;margin:0 auto;padding:0 24px;position:relative;z-index:1;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="tag" style="margin-bottom:20px;">Финальный шаг</div>
+      <h2 style="font-size:clamp(28px,3.5vw,48px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0 0 16px;line-height:1.1;">Готовы увидеть, сколько денег теряется<br/>в вашем отделе продаж?</h2>
+      <p style="font-size:15px;color:#475569;max-width:560px;margin:0 auto;line-height:1.7;">Оставьте заявку на бесплатную диагностику. Разберём вашу ситуацию, покажем возможные точки потерь и объясним, как быстро запустить пилот на ваших данных.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;" class="cta-grid">
+
+      <!-- Form -->
+      <div class="glass" style="border-radius:24px;padding:36px;border:1px solid rgba(59,130,246,0.12);">
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:24px;">Записаться на бесплатную диагностику</div>
+        <div id="final-form-wrap">
+          <form id="final-form" onsubmit="submitFinalForm(event)" style="display:flex;flex-direction:column;gap:12px;">
+            <input class="inp" type="text" placeholder="Ваше имя" required/>
+            <input class="inp" type="tel" placeholder="Телефон" required/>
+            <input class="inp" type="text" placeholder="Компания" required/>
+            <button type="submit" class="btn-primary" style="justify-content:center;padding:14px;font-size:14px;margin-top:4px;">
+              Записаться на бесплатную диагностику →
+            </button>
+            <p style="font-size:11px;color:#475569;text-align:center;margin:0;">Имя, телефон, компания — 15 секунд</p>
+          </form>
+        </div>
+        <div id="final-form-success" style="display:none;text-align:center;padding:32px 0;">
+          <div style="font-size:44px;margin-bottom:14px;">✅</div>
+          <div style="font-size:18px;font-weight:700;color:#4ade80;margin-bottom:8px;">Заявка отправлена</div>
+          <div style="font-size:13px;color:#475569;">Свяжемся с вами в течение рабочего дня</div>
+        </div>
+      </div>
+
+      <!-- Steps + urgency -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#475569;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:18px;">Что происходит после заявки</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="width:28px;height:28px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#60a5fa;flex-shrink:0;">1</div>
+            <div style="font-size:14px;color:#94a3b8;line-height:1.6;padding-top:4px;">Мы связываемся с вами</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="width:28px;height:28px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#60a5fa;flex-shrink:0;">2</div>
+            <div style="font-size:14px;color:#94a3b8;line-height:1.6;padding-top:4px;">Проводим короткий разбор текущей ситуации</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="width:28px;height:28px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#60a5fa;flex-shrink:0;">3</div>
+            <div style="font-size:14px;color:#94a3b8;line-height:1.6;padding-top:4px;">Показываем, где вы можете вернуть деньги из уже оплаченного трафика</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="width:28px;height:28px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#4ade80;flex-shrink:0;">4</div>
+            <div style="font-size:14px;color:#94a3b8;line-height:1.6;padding-top:4px;">Вы принимаете решение, опираясь на факты и цифры</div>
+          </div>
+        </div>
+        <div class="glass" style="border-radius:14px;padding:18px 20px;border:1px solid rgba(239,68,68,0.1);">
+          <div style="font-size:13px;color:#64748b;line-height:1.65;">Пока вы откладываете, часть ваших лидов продолжает <span style="color:#f87171;font-weight:600;">уходить конкурентам.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER -->
+<footer style="border-top:1px solid rgba(255,255,255,0.04);padding:32px 0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:26px;height:26px;background:#2563eb;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="white" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="white" stroke-width="1.5"/></svg>
+      </div>
+      <span style="font-weight:800;font-size:15px;color:#fff;letter-spacing:-0.03em;">COLVER</span>
+      <span style="font-size:12px;color:#475569;margin-left:6px;">Продукт ESOFT · группа «Этажи»</span>
+    </div>
+    <div style="font-size:12px;color:#475569;">© 2025 COLVER. ИИ-контроль звонков и коммуникаций.</div>
+  </div>
+</footer>
+
+<script>
+  // ── ROI Calculator ──
+  const fmt = n => new Intl.NumberFormat('ru-RU').format(Math.round(n));
+  const fmtM = n => {
+    if (n >= 1000000) return (n/1000000).toFixed(1).replace('.0','') + ' млн ₽';
+    if (n >= 1000) return Math.round(n/1000) + ' тыс ₽';
+    return n + ' ₽';
+  };
+
+  let leads = 150, conv = 8, check = 500000, ret = 10;
+  let scenariosVisible = false;
+
+  function calcRevenue(l, c, ch) { return l * (c/100) * ch; }
+
+  function updateCalc() {
+    document.getElementById('leads-val').textContent = leads;
+    document.getElementById('conv-val').textContent = conv + '%';
+    document.getElementById('check-val').textContent = fmtM(check);
+    const retEl = document.getElementById('ret-val');
+    if (retEl) { retEl.textContent = ret + '%'; retEl.style.color = ret >= 30 ? '#4ade80' : ret >= 20 ? '#60a5fa' : '#94a3b8'; }
+
+    const rev = calcRevenue(leads, conv, check);
+    document.getElementById('current-rev').textContent = fmt(rev) + ' ₽';
+    document.getElementById('rev-formula').textContent = leads + ' лидов × ' + conv + '% × ' + fmt(check) + ' ₽';
+
+    // Потенциал: ret% слитых лидов возвращаем в воронку, они проходят через ту же конверсию
+    const unconvertedLeads = leads * (1 - conv / 100);
+    const returnedToFunnel = unconvertedLeads * (ret / 100);
+    const extraDeals = Math.max(1, returnedToFunnel * (conv / 100));
+    const gainRev = extraDeals * check;
+    const lEl = document.getElementById('loss-rev');
+    if (lEl) lEl.textContent = '+' + fmt(gainRev) + ' ₽';
+    const dEl = document.getElementById('loss-deals');
+    if (dEl) dEl.textContent = '+' + Math.ceil(extraDeals) + ' сделок / мес с COLVER';
+
+    if (scenariosVisible) renderScenarios();
+  }
+
+  function renderScenarios() {
+    const baseRev = calcRevenue(leads, conv, check);
+    [1,2,3].forEach((delta, i) => {
+      const newConv = conv + delta;
+      const newRev = calcRevenue(leads, newConv, check);
+      const gain = newRev - baseRev;
+      const dealsGained = leads * (delta / 100);
+      document.getElementById('s'+(i+1)+'-label').textContent =
+        '+' + delta + 'пп конверсии → ещё ' + Math.ceil(dealsGained) + ' сделок/мес';
+      document.getElementById('s'+(i+1)+'-rev').textContent = fmt(newRev) + ' ₽';
+      document.getElementById('s'+(i+1)+'-gain').textContent = '+' + fmt(gain) + ' ₽ / мес';
+    });
+  }
+
+  function showScenarios() {
+    scenariosVisible = true;
+    renderScenarios();
+    document.getElementById('scenarios').style.display = 'block';
+    document.getElementById('calc-cta-wrap').style.display = 'none';
+    document.getElementById('scenarios').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // ── Minute cost calculator ──
+  const RATE_PER_MIN = 5; // ₽ за минуту
+  function calcMinutes() {
+    const mins = parseInt(document.getElementById('min-input').value) || 0;
+    const cost = Math.max(10000, mins * RATE_PER_MIN);
+    document.getElementById('min-cost').textContent = fmt(cost) + ' ₽';
+  }
+
+  document.getElementById('leads-slider').addEventListener('input', e => { leads = +e.target.value; updateCalc(); });
+  document.getElementById('conv-slider').addEventListener('input', e => { conv = +e.target.value; updateCalc(); });
+  document.getElementById('check-slider').addEventListener('input', e => { check = +e.target.value; updateCalc(); });
+  document.getElementById('ret-slider').addEventListener('input', e => { ret = +e.target.value; updateCalc(); });
+  updateCalc();
+
+  // ── Comparison table ──
+  const tableRows = [
+    ['Объём контроля',         '3–5% звонков',       '100%, по маркерам',     '100%, смысловой анализ'],
+    ['Скорость реакции',       'Постфактум',          'Отчётность',            'Мгновенные алерты'],
+    ['Отраслевая логика',      'Зависит от опыта',   'Универсальная',         'Специфика недвижимости'],
+    ['Очередь действий',       '—',                  'Обычно нет',            'Да, для РОПа'],
+    ['Контроль потерь',        'Частично',            'Формально',             'На уровне денег'],
+    ['Лучшие практики',        'Вручную',             'Почти нет',             'Выявляются и масштабируются'],
+    ['Человеческий фактор',    'Высокий',             'Низкий',                'Стремится к минимуму'],
+  ];
+
+  const icons = {
+    bad: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+    mid: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>`,
+    good:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+  };
+
+  const tbody = document.getElementById('table-rows');
+  tableRows.forEach((r, i) => {
+    const bg = i%2===0 ? 'rgba(255,255,255,0.01)' : 'transparent';
+    tbody.innerHTML += `
+      <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:${bg};">
+        <div style="padding:14px 20px;font-size:13px;color:#64748b;font-weight:500;border-top:1px solid rgba(255,255,255,0.03);">${r[0]}</div>
+        <div style="padding:14px 20px;font-size:13px;color:#475569;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);">${r[1]}</div>
+        <div style="padding:14px 20px;font-size:13px;color:#64748b;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);">${r[2]}</div>
+        <div style="padding:14px 20px;font-size:13px;color:#60a5fa;font-weight:600;text-align:center;border-top:1px solid rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.04);">${r[3]}</div>
+      </div>`;
+  });
+
+  // ── FAQ accordion ──
+  const faqs = [
+    ['Брокеры не начнут саботировать систему?','Нет, если внедрение сделано правильно. Мы не строим систему тотального наказания. COLVER помогает менеджерам не терять сделки, а руководителю — точечно усиливать команду.'],
+    ['У нас сложный продукт. COLVER это поймёт?','Да. Система работает не только по словам-маркерам, а по смыслу коммуникации, структуре диалога, договорённостям и целевым действиям. Плюс мы адаптируем логику под вашу специфику.'],
+    ['Насколько сложно это технически?','Для вашей команды — минимально. Подключение и базовую интеграцию мы берём на себя.'],
+    ['Когда можно увидеть первый эффект?','Первые сигналы, точки потерь и проблемные сценарии обычно видны уже на пилоте, после старта мониторинга реального трафика.'],
+    ['Нужен ли отдельный сотрудник со стороны клиента?','Нет. Обычно достаточно вовлечённого руководителя или РОПа, который будет работать с очередью внимания и использовать выводы системы.'],
+  ];
+
+  const faqList = document.getElementById('faq-list');
+  faqs.forEach(([q, a], i) => {
+    const el = document.createElement('div');
+    el.className = 'glass';
+    el.style.cssText = 'border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);transition:border-color 0.2s;';
+    el.innerHTML = `
+      <button onclick="toggleFaq(${i})" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:none;border:none;cursor:pointer;gap:16px;text-align:left;">
+        <span style="font-size:14px;font-weight:600;color:#e2e8f0;line-height:1.4;">${q}</span>
+        <span id="faq-icon-${i}" style="color:#475569;flex-shrink:0;transition:transform 0.3s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </span>
+      </button>
+      <div id="faq-body-${i}" style="display:none;padding:0 22px 18px;">
+        <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:16px;font-size:13.5px;color:#64748b;line-height:1.75;">${a}</div>
+      </div>`;
+    faqList.appendChild(el);
+  });
+
+  let openFaq = null;
+  function toggleFaq(i) {
+    const body = document.getElementById('faq-body-'+i);
+    const icon = document.getElementById('faq-icon-'+i);
+    if (openFaq !== null && openFaq !== i) {
+      document.getElementById('faq-body-'+openFaq).style.display = 'none';
+      document.getElementById('faq-icon-'+openFaq).style.transform = 'rotate(0deg)';
+    }
+    const isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    openFaq = isOpen ? null : i;
+  }
+
+  // ── Final form ──
+  function submitFinalForm(e) {
+    e.preventDefault();
+    document.getElementById('final-form').style.display = 'none';
+    document.getElementById('final-form-success').style.display = 'block';
+  }
+
+  // ── Responsive: add missing grid fixes ──
+  const mq = window.matchMedia('(max-width:768px)');
+  function applyMobile(e) {
+    const grids = document.querySelectorAll('.calc-sliders,.scenarios-grid,.whom-grid,.noscript-grid,.pilot-grid,.security-grid,.cta-grid');
+    grids.forEach(g => { g.style.gridTemplateColumns = e.matches ? '1fr' : ''; });
+  }
+  mq.addEventListener('change', applyMobile);
+  applyMobile(mq);
+
+  // ── Header scroll effect ──
+  const header = document.getElementById('header');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // ── Bar chart heights ──
+  const heights = [58,72,48,85,63,38,80,92,55,88,68,76,95,82];
+  heights.forEach((h, i) => {
+    const el = document.getElementById('bar' + i);
+    if (el) el.style.height = h + '%';
+  });
+
+  // ── Fade-in animations on load ──
+  const fadeEls = [
+    { id: 'hero-tag',   delay: 0   },
+    { id: 'hero-h1',    delay: 80  },
+    { id: 'hero-sub',   delay: 160 },
+    { id: 'hero-cta',   delay: 240 },
+    { id: 'hero-stats', delay: 320 },
+  ];
+  fadeEls.forEach(({ id, delay }) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.transition = 'opacity 0.65s ease, transform 0.65s ease';
+        el.style.transform = 'translateY(0)';
+        el.style.opacity = '1';
+      }
+    }, delay + 100);
+  });
+  // Set initial state
+  fadeEls.forEach(({ id }) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+    }
+  });
+
+  // ── Form submit ──
+  function submitHeroForm(e) {
+    e.preventDefault();
+    document.getElementById('hero-form').style.display = 'none';
+    document.getElementById('hero-form-success').style.display = 'block';
+  }
+
+  // ── Animate result bars on scroll into view ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.result-bar').forEach(bar => {
+          bar.style.width = bar.dataset.w + '%';
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.results-grid').forEach(el => observer.observe(el));
+
+  // ── Pulse dot keyframes via JS (for cross-browser) ──
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.65); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-9px); }
+    }
+    .animate-float { animation: float 5.5s ease-in-out infinite; }
+    .animate-float-d { animation: float 5.5s 1.2s ease-in-out infinite; }
+    @keyframes rotateRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes rotateRingDiv {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes windowBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+    @media (max-width: 900px) {
+      .calc-sliders { grid-template-columns: 1fr 1fr !important; }
+    }
+    @media (max-width: 768px) {
+      .calc-sliders { grid-template-columns: 1fr !important; }
+      .sec-main-grid { grid-template-columns: 1fr !important; }
+      .sec-main-grid > div:first-child { display: none; }
+    }
+    /* hide number input arrows */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { appearance: textfield; -moz-appearance: textfield; }
+  `;
+  document.head.appendChild(style);
+</script>
+</body>
+</html>
