@@ -224,19 +224,129 @@
       background: rgba(239,68,68,0.04) !important;
     }
 
-    /* Mobile nav */
-    #mobile-nav { display: none; }
-    @media (max-width: 768px) {
-      #mobile-nav.open { display: block; }
-      .desktop-nav { display: none !important; }
-      .hero-grid { grid-template-columns: 1fr !important; }
-      .hero-right { display: none; }
-      .stats-grid { grid-template-columns: 1fr 1fr !important; }
-      .results-grid { grid-template-columns: 1fr 1fr !important; }
-      .pain-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+    /* ── Hamburger button ── */
+    .burger-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9px;
+      background: rgba(255,255,255,0.04);
+      cursor: pointer; gap: 5px;
+      transition: all 0.2s;
     }
+    .burger-btn span {
+      display: block; width: 18px; height: 1.5px;
+      background: #94a3b8; border-radius: 2px;
+      transition: all 0.25s;
+    }
+    .burger-btn.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .burger-btn.open span:nth-child(2) { opacity: 0; }
+    .burger-btn.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* ── Mobile nav dropdown ── */
+    #mobile-nav {
+      display: none;
+      position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
+      background: rgba(8,9,11,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 20px 24px 28px;
+      flex-direction: column; gap: 4px;
+    }
+    #mobile-nav.open { display: flex; }
+    #mobile-nav a {
+      color: #94a3b8; font-size: 16px; font-weight: 500;
+      text-decoration: none; padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: color 0.2s;
+    }
+    #mobile-nav a:last-of-type { border-bottom: none; }
+    #mobile-nav a:hover { color: #f8fafc; }
+    #mobile-nav .mob-cta {
+      margin-top: 16px;
+      background: #2563eb; color: #fff;
+      border-radius: 10px; padding: 14px;
+      font-weight: 700; font-size: 15px;
+      text-align: center; border-bottom: none !important;
+      box-shadow: 0 0 24px rgba(37,99,235,0.4);
+    }
+
+    /* ── 768px breakpoint ── */
+    @media (max-width: 768px) {
+      .burger-btn { display: flex; }
+      .desktop-nav { display: none !important; }
+      .header-cta { display: none !important; }
+
+      /* Hero */
+      .hero-grid { grid-template-columns: 1fr !important; }
+      .hero-right { display: none !important; }
+      .stats-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* Results */
+      .results-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* Pain */
+      .pain-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+      /* How it works */
+      .how-grid { grid-template-columns: 1fr !important; }
+      .how-grid .connector-line { display: none !important; }
+      .how-grid > div { margin-top: 0 !important; }
+
+      /* Bento dashboard */
+      .bento-grid { grid-template-columns: 1fr !important; }
+      .bento-grid > div[style*="span 2"] { grid-column: span 1 !important; }
+
+      /* Roadmap */
+      .roadmap-grid { grid-template-columns: 1fr !important; }
+      .ai-inner-grid { grid-template-columns: 1fr !important; }
+
+      /* Calculator */
+      .calc-sliders { grid-template-columns: 1fr 1fr !important; }
+      .rev-panels { grid-template-columns: 1fr !important; }
+      .scenarios-grid { grid-template-columns: 1fr !important; }
+
+      /* For whom */
+      .whom-grid { grid-template-columns: 1fr !important; }
+
+      /* No scripts */
+      .noscript-grid { grid-template-columns: 1fr !important; }
+
+      /* Trust */
+      .trust-stats-grid { grid-template-columns: 1fr !important; }
+
+      /* Pilot */
+      .pilot-grid { grid-template-columns: 1fr !important; }
+
+      /* Security */
+      .sec-main-grid { grid-template-columns: 1fr !important; }
+      .sec-main-grid > div:first-child { display: none !important; }
+
+      /* Final CTA */
+      .cta-grid { grid-template-columns: 1fr !important; }
+
+      /* Comparison table — horizontal scroll */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-wrap table { min-width: 560px; }
+
+      /* Pilot banner */
+      .pilot-banner { flex-direction: column !important; gap: 14px !important; }
+      .pilot-banner a { width: 100%; text-align: center; justify-content: center; }
+
+      /* Section paddings */
+      section { padding-top: 60px !important; padding-bottom: 60px !important; }
+    }
+
+    /* ── 480px breakpoint ── */
     @media (max-width: 480px) {
       .results-grid { grid-template-columns: 1fr !important; }
+      .stats-grid { grid-template-columns: 1fr !important; }
+      .calc-sliders { grid-template-columns: 1fr !important; }
+      .scenarios-grid { grid-template-columns: 1fr 1fr !important; }
     }
 
     /* Animated bar chart */
@@ -282,12 +392,25 @@
     </nav>
 
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="#contact" class="btn-primary" style="padding:9px 18px;font-size:13px;">Оставить заявку
+      <a href="#contact" class="btn-primary header-cta" style="padding:9px 18px;font-size:13px;">Оставить заявку
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
+      <button class="burger-btn" id="burger-btn" onclick="toggleMobileNav()" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- ── Mobile nav ── -->
+<nav id="mobile-nav">
+  <a href="#features" onclick="closeMobileNav()">Возможности</a>
+  <a href="#how" onclick="closeMobileNav()">Как работает</a>
+  <a href="#roi" onclick="closeMobileNav()">ROI</a>
+  <a href="#pilot" onclick="closeMobileNav()">Пилот</a>
+  <a href="#faq" onclick="closeMobileNav()">FAQ</a>
+  <a href="#contact" class="mob-cta" onclick="closeMobileNav()">Оставить заявку →</a>
+</nav>
 
 <!-- ═══════════════════════════════════════════════ HERO -->
 <section style="position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;overflow:hidden;">
@@ -1556,22 +1679,24 @@
       <div class="tag" style="margin-bottom:20px;">Сравнение</div>
       <h2 style="font-size:clamp(24px,3vw,40px);font-weight:800;color:#f8fafc;letter-spacing:-0.03em;margin:0;line-height:1.15;">Почему COLVER эффективнее ручного контроля<br/>и обычной речевой аналитики</h2>
     </div>
-    <div class="glass" style="border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);">
-      <!-- Table header -->
-      <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:rgba(255,255,255,0.03);">
-        <div style="padding:16px 20px;font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Параметр</div>
-        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
-          <div style="font-size:13px;font-weight:600;color:#64748b;">Обычный РОП / ОКК</div>
+    <div class="table-wrap">
+      <div class="glass" style="border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);">
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:220px 1fr 1fr 1fr;background:rgba(255,255,255,0.03);">
+          <div style="padding:16px 20px;font-size:11px;color:#475569;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Параметр</div>
+          <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
+            <div style="font-size:13px;font-weight:600;color:#64748b;">Обычный РОП / ОКК</div>
+          </div>
+          <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
+            <div style="font-size:13px;font-weight:600;color:#64748b;">Базовая речевая<br/>аналитика</div>
+          </div>
+          <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.06);">
+            <div style="font-size:13px;font-weight:700;color:#60a5fa;">COLVER</div>
+          </div>
         </div>
-        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);">
-          <div style="font-size:13px;font-weight:600;color:#64748b;">Базовая речевая<br/>аналитика</div>
-        </div>
-        <div style="padding:16px 20px;text-align:center;border-left:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.06);">
-          <div style="font-size:13px;font-weight:700;color:#60a5fa;">COLVER</div>
-        </div>
+        <!-- Rows -->
+        <div id="table-rows"></div>
       </div>
-      <!-- Rows -->
-      <div id="table-rows"></div>
     </div>
     <div style="text-align:center;margin-top:20px;font-size:14px;color:#475569;">COLVER — это не замена руководителю. Это <span style="color:#e2e8f0;font-weight:600;">усилитель управленческого влияния на выручку.</span></div>
   </div>
@@ -1589,7 +1714,7 @@
     </div>
 
     <!-- OFFER BANNER (first 5 clients) -->
-    <div style="border-radius:20px;padding:24px 32px;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(59,130,246,0.06));border:1px solid rgba(34,197,94,0.22);display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+    <div class="pilot-banner" style="border-radius:20px;padding:24px 32px;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(59,130,246,0.06));border:1px solid rgba(34,197,94,0.22);display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
       <div style="width:44px;height:44px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       </div>
@@ -2095,6 +2220,18 @@
       </div>`;
     faqList.appendChild(el);
   });
+
+  // ── Mobile nav ──
+  function toggleMobileNav() {
+    const nav = document.getElementById('mobile-nav');
+    const btn = document.getElementById('burger-btn');
+    nav.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+  function closeMobileNav() {
+    document.getElementById('mobile-nav').classList.remove('open');
+    document.getElementById('burger-btn').classList.remove('open');
+  }
 
   let openFaq = null;
   function toggleFaq(i) {
