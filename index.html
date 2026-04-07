@@ -2250,11 +2250,17 @@
     const inputs = e.target.querySelectorAll('input');
     const [name, phone, company] = [...inputs].map(i => i.value);
     const text = `📋 Новая заявка (Colver)\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n🏢 Компания: ${company || '—'}`;
-    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TG_CHAT, text }),
-    });
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TG_CHAT, text }),
+      });
+      const data = await r.json();
+      console.log('TG response:', data);
+    } catch(err) {
+      console.error('TG error:', err);
+    }
     document.getElementById('final-form-wrap').style.display = 'none';
     document.getElementById('final-form-success').style.display = 'block';
   }
