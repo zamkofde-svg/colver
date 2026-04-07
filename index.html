@@ -676,7 +676,7 @@
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Записаться на диагностику</div>
           <form id="hero-form" onsubmit="submitHeroForm(event)" style="display:flex;flex-direction:column;gap:9px;">
             <input class="inp" type="text" placeholder="Ваше имя" required />
-            <input class="inp" type="tel" placeholder="Телефон" required />
+            <input class="inp phone-mask" type="tel" placeholder="+7 (___) ___-__-__" required />
             <input class="inp" type="text" placeholder="Компания" required />
             <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:4px;">
               Записаться
@@ -2182,7 +2182,7 @@
         <div id="final-form-wrap">
           <form id="final-form" onsubmit="submitFinalForm(event)" style="display:flex;flex-direction:column;gap:12px;">
             <input class="inp" type="text" placeholder="Ваше имя" required/>
-            <input class="inp" type="tel" placeholder="Телефон" required/>
+            <input class="inp phone-mask" type="tel" placeholder="+7 (___) ___-__-__" required/>
             <input class="inp" type="text" placeholder="Компания" required/>
             <button type="submit" class="btn-primary" style="justify-content:center;padding:14px;font-size:14px;margin-top:4px;">
               Записаться на бесплатную диагностику →
@@ -2241,6 +2241,30 @@
 </footer>
 
 <script>
+  // ── Phone mask ──
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.phone-mask').forEach(input => {
+      input.addEventListener('input', function(e) {
+        let v = this.value.replace(/\D/g, '');
+        if (v.startsWith('8')) v = '7' + v.slice(1);
+        if (!v.startsWith('7')) v = '7' + v;
+        v = v.slice(0, 11);
+        let r = '+7';
+        if (v.length > 1) r += ' (' + v.slice(1, 4);
+        if (v.length >= 4) r += ') ' + v.slice(4, 7);
+        if (v.length >= 7) r += '-' + v.slice(7, 9);
+        if (v.length >= 9) r += '-' + v.slice(9, 11);
+        this.value = r;
+      });
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '+7') {
+          e.preventDefault();
+          this.value = '';
+        }
+      });
+    });
+  });
+
   // ── Telegram ──
   const TG_TOKEN = '5118071925:AAFZnreB3Gip_-ECwJGJm_8ou7DlZDMi4fc';
   const TG_CHAT = '195170570';
