@@ -2241,6 +2241,24 @@
 </footer>
 
 <script>
+  // ── Telegram ──
+  const TG_TOKEN = '5118071925:AAFZnreB3Gip_-ECwJGJm_8ou7DlZDMi4fc';
+  const TG_CHAT = '195170570';
+
+  async function submitFinalForm(e) {
+    e.preventDefault();
+    const inputs = e.target.querySelectorAll('input');
+    const [name, phone, company] = [...inputs].map(i => i.value);
+    const text = `📋 Новая заявка (Colver)\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n🏢 Компания: ${company || '—'}`;
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT, text }),
+    });
+    document.getElementById('final-form-wrap').style.display = 'none';
+    document.getElementById('final-form-success').style.display = 'block';
+  }
+
   // ── ROI Calculator ──
   const fmt = n => new Intl.NumberFormat('ru-RU').format(Math.round(n));
   const fmtM = n => {
