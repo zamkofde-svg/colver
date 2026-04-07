@@ -2266,22 +2266,19 @@
   });
 
   // ── Telegram ──
-  const TG_TOKEN = '5118071925:AAFZnreB3Gip_-ECwJGJm_8ou7DlZDMi4fc';
-  const TG_CHAT = '195170570';
-
   async function submitFinalForm(e) {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'Отправляем...';
     const inputs = e.target.querySelectorAll('input');
     const [name, phone, company] = [...inputs].map(i => i.value);
-    const text = `📋 Новая заявка (Colver)\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n🏢 Компания: ${company || '—'}`;
     try {
-      const r = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      await fetch('send.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TG_CHAT, text }),
+        body: JSON.stringify({ name, phone, company }),
       });
-      const data = await r.json();
-      console.log('TG response:', data);
     } catch(err) {
       console.error('TG error:', err);
     }
